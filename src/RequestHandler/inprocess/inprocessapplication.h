@@ -145,7 +145,7 @@ private:
 
     FILE*                           m_pStdFile;
     STTIMER                         m_Timer;
-    SRWLOCK                         m_srwLock;
+    std::mutex                      m_srwLock;
 
     // Thread for capturing startup stderr logs when logging is disabled
     HANDLE                          m_hErrThread;

@@ -60,4 +60,29 @@ SAFEIsDigit(UCHAR c)
     return isdigit( c );
 }
 
+#define RINOK(x) { HRESULT __result_ = (x); if(__result_ != S_OK) { hr = __result_; goto Finished; }; }
+
+template< typename T >
+void ThrowIfFailed( HRESULT hr, T&& msg )
+{
+    if( FAILED( hr ) )
+        throw std::system_error{ hr, std::system_category(), std::forward<T>( msg ) };
+}
+
+template< typename T >
+HANDLE ThrowIfInvalid( HANDLE handle, T&& msg )
+{
+    if( handle == INVALID_HANDLE_VALUE )
+        throw std::system_error{ HRESULT_FROM_WIN32(GetLastError()), std::system_category(), std::forward<T>( msg ) };
+
+    return handle;
+}
+
+template< typename T >
+HANDLE ThrowIfFailed( BOOL succeeded, T&& msg )
+{
+    if( !succeeded )
+        throw std::system_error{ HRESULT_FROM_WIN32(GetLastError()), std::system_category(), std::forward<T>( msg ) };
+}
+
 #endif // _MACROS_H

@@ -26,6 +26,7 @@
 #include <wchar.h>
 #include <io.h>
 #include <stdio.h>
+#include <mutex>
 // This should remove our issue of compiling for win7 without header files.
 // We  force the Windows 8 version check logic in iiswebsocket.h to succeed even though we're compiling for Windows 7.
 // Then, we set the version defines back to Windows 7 to for the remainder of the compilation.
@@ -56,6 +57,7 @@
 #include "..\CommonLib\utility.h"
 #include "..\CommonLib\application.h"
 #include "..\CommonLib\resources.h"
+#include "..\CommonLib\HandleWrapper.h"
 #include "aspnetcore_event.h"
 #include "aspnetcore_msg.h"
 #include "disconnectcontext.h"
