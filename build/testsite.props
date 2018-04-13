@@ -29,10 +29,11 @@
     
   </PropertyGroup>
   <ItemGroup Condition="'$(OS)' == 'Windows_NT' AND ('$(ANCMVersion)' == 'V2' Or '$(ANCMVersion)' == '')">
-    <None Include="$(MSBuildThisFileDirectory)..\src\AspNetCoreModuleV2\RequestHandler\bin\$(Configuration)\$(NativeFolder)\aspnetcorerh.dll" CopyToOutputDirectory="PreserveNewest" Visible="true" Link="$(BasePathForRequestHandler)%(FileName)%(Extension)" />
-    <None Include="$(MSBuildThisFileDirectory)..\src\AspNetCoreModuleV2\RequestHandler\bin\$(Configuration)\$(NativeFolder)\aspnetcorerh.pdb" CopyToOutputDirectory="PreserveNewest" Visible="true" Link="$(BasePathForRequestHandler)%(FileName)%(Extension)" />
-    <None Include="$(MSBuildThisFileDirectory)..\src\AspNetCoreModuleV2\AspNetCore\bin\$(Configuration)\$(NativeFolder)\aspnetcore.dll" CopyToOutputDirectory="PreserveNewest" Visible="true" Link="$(NativePlatform)\%(FileName)%(Extension)" />
-    <None Include="$(MSBuildThisFileDirectory)..\src\AspNetCoreModuleV2\AspNetCore\bin\$(Configuration)\$(NativeFolder)\aspnetcore.pdb" CopyToOutputDirectory="PreserveNewest" Visible="true" Link="$(NativePlatform)\%(FileName)%(Extension)" />
+    <None Include="$(MSBuildThisFileDirectory)..\src\AspNetCoreModuleV2\InProcessRequestHandler\bin\$(Configuration)\$(NativeFolder)\aspnetcorerh.dll" CopyToOutputDirectory="PreserveNewest" Visible="true" Link="$(BasePathForRequestHandler)%(FileName)%(Extension)" />
+    <None Include="$(MSBuildThisFileDirectory)..\src\AspNetCoreModuleV2\InProcessRequestHandler\bin\$(Configuration)\$(NativeFolder)\aspnetcorerh.pdb" CopyToOutputDirectory="PreserveNewest" Visible="true" Link="$(BasePathForRequestHandler)%(FileName)%(Extension)" />
+    <!-- Make this happen for out of proc too -->
+    <None Include="$(MSBuildThisFileDirectory)..\src\AspNetCoreModuleV2\AspNetCoreShim\bin\$(Configuration)\$(NativeFolder)\aspnetcore.dll" CopyToOutputDirectory="PreserveNewest" Visible="true" Link="$(NativePlatform)\%(FileName)%(Extension)" />
+    <None Include="$(MSBuildThisFileDirectory)..\src\AspNetCoreModuleV2\AspNetCoreShim\bin\$(Configuration)\$(NativeFolder)\aspnetcore.pdb" CopyToOutputDirectory="PreserveNewest" Visible="true" Link="$(NativePlatform)\%(FileName)%(Extension)" />
   </ItemGroup>
   <ItemGroup Condition="'$(OS)' == 'Windows_NT' AND '$(ANCMVersion)' == 'V1'">
     <None Include="$(MSBuildThisFileDirectory)..\src\AspNetCoreModuleV1\AspNetCore\bin\$(Configuration)\$(NativeFolder)\aspnetcore.dll" CopyToOutputDirectory="PreserveNewest" Visible="true" Link="$(NativePlatform)\%(FileName)%(Extension)" />

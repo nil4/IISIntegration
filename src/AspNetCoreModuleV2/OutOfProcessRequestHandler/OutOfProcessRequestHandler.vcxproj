@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="..\..\..\Build\Build.Settings" />
   <ItemGroup Label="ProjectConfigurations">
@@ -6,13 +6,13 @@
       <Configuration>Debug</Configuration>
       <Platform>Win32</Platform>
     </ProjectConfiguration>
-    <ProjectConfiguration Include="Debug|x64">
-      <Configuration>Debug</Configuration>
-      <Platform>x64</Platform>
-    </ProjectConfiguration>
     <ProjectConfiguration Include="Release|Win32">
       <Configuration>Release</Configuration>
       <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
     </ProjectConfiguration>
     <ProjectConfiguration Include="Release|x64">
       <Configuration>Release</Configuration>
@@ -20,22 +20,15 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{EC82302F-D2F0-4727-99D1-EABC0DD9DC3B}</ProjectGuid>
+    <VCProjectVersion>15.0</VCProjectVersion>
+    <ProjectGuid>{2823FFC6-03D7-48A9-A28C-2672207A7064}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
-    <RootNamespace>AspNetCoreModule</RootNamespace>
-    <ProjectName>AspNetCore</ProjectName>
-    <TargetName>aspnetcore</TargetName>
-    <LinkIncremental>false</LinkIncremental>
+    <RootNamespace>RequestHandler</RootNamespace>
     <WindowsTargetPlatformVersion>10.0.15063.0</WindowsTargetPlatformVersion>
+    <ProjectName>OutOfProcessRequestHandler</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
-    <ConfigurationType>DynamicLibrary</ConfigurationType>
-    <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v141</PlatformToolset>
-    <CharacterSet>Unicode</CharacterSet>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <PlatformToolset>v141</PlatformToolset>
@@ -48,6 +41,12 @@
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v141</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
@@ -58,33 +57,41 @@
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
   </ImportGroup>
-  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  <ImportGroup Label="Shared">
   </ImportGroup>
-  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="PropertySheets">
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
-  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="PropertySheets">
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup>
-    <OutDir>$(MSBuildProjectDirectory)\bin\$(Configuration)\$(Platform)\</OutDir>
+    <TargetName>aspnetcorerh</TargetName>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <LinkIncremental>false</LinkIncremental>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <LinkIncremental>false</LinkIncremental>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <WarningLevel>Level4</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;_USRDLL;ASPNETCOREMODULE_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_DEBUG;REQUESTHANDLER_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <PrecompiledHeaderFile>precomp.hxx</PrecompiledHeaderFile>
       <PrecompiledHeaderOutputFile>$(IntDir)$(TargetName).pch</PrecompiledHeaderOutputFile>
-      <AdditionalIncludeDirectories>..\IISLib;.\Inc</AdditionalIncludeDirectories>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+      <AdditionalIncludeDirectories>..\IISLib;..\CommonLib;.\Inc</AdditionalIncludeDirectories>
       <TreatWarningAsError>true</TreatWarningAsError>
       <SDLCheck>true</SDLCheck>
       <WholeProgramOptimization>true</WholeProgramOptimization>
@@ -103,21 +110,18 @@
       <AdditionalDependencies>kernel32.lib;user32.lib;advapi32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;ahadmin.lib;rpcrt4.lib;winhttp.lib;pdh.lib;ws2_32.lib;wbemuuid.lib;iphlpapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <ModuleDefinitionFile>Source.def</ModuleDefinitionFile>
     </Link>
-    <ResourceCompile>
-      <AdditionalIncludeDirectories>..\Commonlib</AdditionalIncludeDirectories>
-    </ResourceCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <WarningLevel>Level4</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;_USRDLL;ASPNETCOREMODULE_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_DEBUG;REQUESTHANDLER_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <PrecompiledHeaderFile>precomp.hxx</PrecompiledHeaderFile>
       <PrecompiledHeaderOutputFile>$(IntDir)$(TargetName).pch</PrecompiledHeaderOutputFile>
-      <AdditionalIncludeDirectories>..\IISLib;.\Inc</AdditionalIncludeDirectories>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+      <AdditionalIncludeDirectories>..\IISLib;..\CommonLib;.\Inc</AdditionalIncludeDirectories>
       <TreatWarningAsError>true</TreatWarningAsError>
       <SDLCheck>true</SDLCheck>
       <WholeProgramOptimization>true</WholeProgramOptimization>
@@ -136,9 +140,6 @@
       <AdditionalDependencies>kernel32.lib;user32.lib;advapi32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;ahadmin.lib;rpcrt4.lib;winhttp.lib;pdh.lib;ws2_32.lib;wbemuuid.lib;iphlpapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <ModuleDefinitionFile>Source.def</ModuleDefinitionFile>
     </Link>
-    <ResourceCompile>
-      <AdditionalIncludeDirectories>..\Commonlib</AdditionalIncludeDirectories>
-    </ResourceCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
@@ -147,10 +148,10 @@
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;_USRDLL;ASPNETCOREMODULE_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>..\IISLib;inc</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;_USRDLL;REQUESTHANDLER_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <PrecompiledHeaderFile>precomp.hxx</PrecompiledHeaderFile>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <AdditionalIncludeDirectories>..\IISLib;..\CommonLib;.\Inc</AdditionalIncludeDirectories>
       <TreatWarningAsError>true</TreatWarningAsError>
       <SDLCheck>true</SDLCheck>
       <WholeProgramOptimization>true</WholeProgramOptimization>
@@ -171,9 +172,6 @@
       <ModuleDefinitionFile>Source.def</ModuleDefinitionFile>
       <AdditionalDependencies>kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;ahadmin.lib;winhttp.lib;odbc32.lib;ws2_32.lib;odbccp32.lib;wbemuuid.lib;iphlpapi.lib;pdh.lib;rpcrt4.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
-    <ResourceCompile>
-      <AdditionalIncludeDirectories>..\Commonlib</AdditionalIncludeDirectories>
-    </ResourceCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
@@ -182,10 +180,10 @@
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;_USRDLL;ASPNETCOREMODULE_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>NDEBUG;REQUESTHANDLER_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <PrecompiledHeaderFile>precomp.hxx</PrecompiledHeaderFile>
-      <AdditionalIncludeDirectories>..\IISLib;inc</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <AdditionalIncludeDirectories>..\IISLib;..\CommonLib;.\Inc</AdditionalIncludeDirectories>
       <TreatWarningAsError>true</TreatWarningAsError>
       <SDLCheck>true</SDLCheck>
       <WholeProgramOptimization>true</WholeProgramOptimization>
@@ -206,52 +204,48 @@
       <ModuleDefinitionFile>Source.def</ModuleDefinitionFile>
       <AdditionalDependencies>kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;ahadmin.lib;rpcrt4.lib;winhttp.lib;pdh.lib;ws2_32.lib;wbemuuid.lib;iphlpapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
-    <ResourceCompile>
-      <AdditionalIncludeDirectories>..\Commonlib</AdditionalIncludeDirectories>
-    </ResourceCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="Inc\applicationinfo.h" />
-    <ClInclude Include="Inc\appoffline.h" />
-    <ClInclude Include="inc\globalmodule.h" />
-    <ClInclude Include="Inc\applicationmanager.h" />
-    <ClInclude Include="Inc\filewatcher.h" />
-    <ClInclude Include="Inc\proxymodule.h" />
-    <ClInclude Include="Src\precomp.hxx" />
+    <ClInclude Include="aspnetcore_event.h" />
+    <ClInclude Include="disconnectcontext.h" />
+    <ClInclude Include="environmentvariablehelpers.h" />
+    <ClInclude Include="sttimer.h" />
+    <ClInclude Include="outofprocess\forwarderconnection.h" />
+    <ClInclude Include="outofprocess\processmanager.h" />
+    <ClInclude Include="outofprocess\protocolconfig.h" />
+    <ClInclude Include="outofprocess\responseheaderhash.h" />
+    <ClInclude Include="outofprocess\serverprocess.h" />
+    <ClInclude Include="outofprocess\websockethandler.h" />
+    <ClInclude Include="outofprocess\winhttphelper.h" />
+    <ClInclude Include="precomp.hxx" />
+    <ClInclude Include=".\outofprocess\forwardinghandler.h" />
+    <ClInclude Include=".\outofprocess\outprocessapplication.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Src\applicationinfo.cpp" />
-    <ClCompile Include="Src\applicationmanager.cxx" />
-    <ClCompile Include="Src\dllmain.cpp" />
-    <ClCompile Include="Src\filewatcher.cxx" />
-    <ClCompile Include="src\globalmodule.cpp" />
-    <ClCompile Include="Src\proxymodule.cxx" />
+    <ClCompile Include="dllmain.cxx" />
+    <ClCompile Include=".\outofprocess\forwardinghandler.cpp" />
+    <ClCompile Include=".\outofprocess\outprocessapplication.cpp" />
+    <ClCompile Include="outofprocess\forwarderconnection.cxx" />
+    <ClCompile Include="outofprocess\processmanager.cxx" />
+    <ClCompile Include="outofprocess\protocolconfig.cxx" />
+    <ClCompile Include="outofprocess\responseheaderhash.cxx" />
+    <ClCompile Include="outofprocess\serverprocess.cxx" />
+    <ClCompile Include="outofprocess\websockethandler.cxx" />
+    <ClCompile Include="outofprocess\winhttphelper.cxx" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\CommonLib\CommonLib.vcxproj">
       <Project>{55494e58-e061-4c4c-a0a8-837008e72f85}</Project>
     </ProjectReference>
     <ProjectReference Include="..\IISLib\IISLib.vcxproj">
-      <Project>{09d9d1d6-2951-4e14-bc35-76a23cf9391a}</Project>
+      <Project>{4787a64f-9a3e-4867-a55a-70cb4b2b2ffe}</Project>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <None Include="ancm.mof" />
+    <ResourceCompile Include="requesthandler.rc" />
+  </ItemGroup>
+  <ItemGroup>
     <None Include="Source.def" />
-  </ItemGroup>
-  <ItemGroup>
-    <ResourceCompile Include="aspnetcoremodule.rc" />
-  </ItemGroup>
-  <ItemGroup>
-    <Content Include="aspnetcore_schema.xml">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="ancm.mof">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-  </ItemGroup>
-  <ItemGroup>
-    <Xml Include="aspnetcore_schema.xml" />
   </ItemGroup>
   <Import Project="..\..\..\build\native.targets" />
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

@@ -53,7 +53,6 @@ src/*/AspNetCore/aspnetcoremodule.h
 src/*/AspNetCore/aspnetcore_msg.h
 src/*/AspNetCore/aspnetcore_msg.rc
 src/*/*/version.h
-src/*/RequestHandler/version.h
 src/*/CommonLib/aspnetcore_msg.h
 src/*/CommonLib/aspnetcore_msg.rc
 test/*/Debug

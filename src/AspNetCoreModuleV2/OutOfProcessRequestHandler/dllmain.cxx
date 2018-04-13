@@ -286,16 +286,7 @@ CreateApplication(
     // Initialze some global variables here
     InitializeGlobalConfiguration(pServer);
 
-    if (pConfig->QueryHostingModel() == APP_HOSTING_MODEL::HOSTING_IN_PROCESS)
-    {
-        pApplication = new IN_PROCESS_APPLICATION(pServer, pConfig);
-        if (pApplication == NULL)
-        {
-            hr = HRESULT_FROM_WIN32(ERROR_OUTOFMEMORY);
-            goto Finished;
-        }
-    }
-    else if (pConfig->QueryHostingModel() == APP_HOSTING_MODEL::HOSTING_OUT_PROCESS)
+    if (pConfig->QueryHostingModel() == APP_HOSTING_MODEL::HOSTING_OUT_PROCESS)
     {
         hr = EnsureOutOfProcessInitializtion();
         if (FAILED(hr))
@@ -344,11 +335,7 @@ CreateRequestHandler(
     ASPNETCORE_CONFIG* pConfig = pApplication->QueryConfig();
     DBG_ASSERT(pConfig);
 
-    if (pConfig->QueryHostingModel() == APP_HOSTING_MODEL::HOSTING_IN_PROCESS)
-    {
-        pHandler = new IN_PROCESS_HANDLER(pHttpContext, pModuleId, pApplication);
-    }
-    else if (pConfig->QueryHostingModel() == APP_HOSTING_MODEL::HOSTING_OUT_PROCESS)
+    if (pConfig->QueryHostingModel() == APP_HOSTING_MODEL::HOSTING_OUT_PROCESS)
     {
         pHandler = new FORWARDING_HANDLER(pHttpContext, pModuleId, pApplication);
     }
