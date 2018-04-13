@@ -27,7 +27,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
 
         [Theory(Skip = "Full framework web.config generation is currently incorrect. See https://github.com/aspnet/websdk/pull/322")]
         [InlineData("V1")]
-        [InlineData("V2")]
+        [InlineData("V2_OutOfProcess")]
         public Task NtlmAuthentication_Clr_X64(string ancmVersion)
         {
             return NtlmAuthentication(RuntimeFlavor.Clr, ApplicationType.Portable, port: 5051, ancmVersion);
@@ -35,7 +35,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
 
         [Theory]
         [InlineData("V1")]
-        [InlineData("V2")]
+        [InlineData("V2_OutOfProcess")]
         public Task NtlmAuthentication_CoreClr_X64_Portable(string ancmVersion)
         {
             return NtlmAuthentication(RuntimeFlavor.CoreClr, ApplicationType.Portable, port: 5052, ancmVersion);

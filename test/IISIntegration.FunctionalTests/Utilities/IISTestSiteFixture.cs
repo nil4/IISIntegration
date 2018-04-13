@@ -25,12 +25,14 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
                 SiteName = "HttpTestSite",
                 TargetFramework = "netcoreapp2.1",
                 ApplicationType = ApplicationType.Portable,
+                HostingModel = HostingModel.InProcess,
                 Configuration =
 #if DEBUG
                         "Debug"
 #else
                         "Release"
 #endif
+                
             };
 
             _deployer = ApplicationDeployerFactory.Create(deploymentParameters, NullLoggerFactory.Instance);

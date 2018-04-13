@@ -28,13 +28,22 @@
     <BasePathForRequestHandler Condition="'$(RuntimeIdentifier)' == ''">$(NativePlatform)\</BasePathForRequestHandler>
     
   </PropertyGroup>
-  <ItemGroup Condition="'$(OS)' == 'Windows_NT' AND ('$(ANCMVersion)' == 'V2' Or '$(ANCMVersion)' == '')">
-    <None Include="$(MSBuildThisFileDirectory)..\src\AspNetCoreModuleV2\InProcessRequestHandler\bin\$(Configuration)\$(NativeFolder)\aspnetcorerh.dll" CopyToOutputDirectory="PreserveNewest" Visible="true" Link="$(BasePathForRequestHandler)%(FileName)%(Extension)" />
+  <ItemGroup Condition="'$(ANCMVersion)' == 'V2_OutOfProcess'"> <!-- Need to inject different request handlers based on -->
+    <None Include="$(MSBuildThisFileDirectory)..\src\AspNetCoreModuleV2\OutOfProcessRequestHandler\bin\$(Configuration)\$(NativeFolder)\aspnetcorerh.pdb" CopyToOutputDirectory="PreserveNewest" Visible="true" Link="$(BasePathForRequestHandler)%(FileName)%(Extension)" />
+    <None Include="$(MSBuildThisFileDirectory)..\src\AspNetCoreModuleV2\OutOfProcessRequestHandler\bin\$(Configuration)\$(NativeFolder)\aspnetcorerh.dll" CopyToOutputDirectory="PreserveNewest" Visible="true" Link="$(BasePathForRequestHandler)%(FileName)%(Extension)" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(ANCMVersion)' == 'V2_InProcess' Or '$(ANCMVersion)' == ''">
     <None Include="$(MSBuildThisFileDirectory)..\src\AspNetCoreModuleV2\InProcessRequestHandler\bin\$(Configuration)\$(NativeFolder)\aspnetcorerh.pdb" CopyToOutputDirectory="PreserveNewest" Visible="true" Link="$(BasePathForRequestHandler)%(FileName)%(Extension)" />
+    <None Include="$(MSBuildThisFileDirectory)..\src\AspNetCoreModuleV2\InProcessRequestHandler\bin\$(Configuration)\$(NativeFolder)\aspnetcorerh.dll" CopyToOutputDirectory="PreserveNewest" Visible="true" Link="$(BasePathForRequestHandler)%(FileName)%(Extension)" />
+  </ItemGroup>
+  
+  <ItemGroup Condition="'$(OS)' == 'Windows_NT' AND ($(ANCMVersion.Contains('V2')) Or '$(ANCMVersion)' == '')">
     <!-- Make this happen for out of proc too -->
     <None Include="$(MSBuildThisFileDirectory)..\src\AspNetCoreModuleV2\AspNetCoreShim\bin\$(Configuration)\$(NativeFolder)\aspnetcore.dll" CopyToOutputDirectory="PreserveNewest" Visible="true" Link="$(NativePlatform)\%(FileName)%(Extension)" />
     <None Include="$(MSBuildThisFileDirectory)..\src\AspNetCoreModuleV2\AspNetCoreShim\bin\$(Configuration)\$(NativeFolder)\aspnetcore.pdb" CopyToOutputDirectory="PreserveNewest" Visible="true" Link="$(NativePlatform)\%(FileName)%(Extension)" />
   </ItemGroup>
+  
   <ItemGroup Condition="'$(OS)' == 'Windows_NT' AND '$(ANCMVersion)' == 'V1'">
     <None Include="$(MSBuildThisFileDirectory)..\src\AspNetCoreModuleV1\AspNetCore\bin\$(Configuration)\$(NativeFolder)\aspnetcore.dll" CopyToOutputDirectory="PreserveNewest" Visible="true" Link="$(NativePlatform)\%(FileName)%(Extension)" />
     <None Include="$(MSBuildThisFileDirectory)..\src\AspNetCoreModuleV1\AspNetCore\bin\$(Configuration)\$(NativeFolder)\aspnetcore.pdb" CopyToOutputDirectory="PreserveNewest" Visible="true" Link="$(NativePlatform)\%(FileName)%(Extension)" />
@@ -62,7 +71,7 @@
   </ItemGroup>
 
   
-  <Target Name="PrepareInjectionApp" Condition="'$(ANCMVersion)' == 'V2' Or '$(ANCMVersion)' == ''">
+  <Target Name="PrepareInjectionApp" Condition="$(ANCMVersion.Contains('V2')) Or '$(ANCMVersion)' == ''">
     <PropertyGroup>
       <InjectDepsAssembly>$(MSBuildThisFileDirectory)..\test\TestTasks\bin\$(Configuration)\$(TargetFramework)\TestTasks</InjectDepsAssembly>
 

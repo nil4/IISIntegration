@@ -90,16 +90,16 @@
       <!-- x86 -->
       <AncmFiles Include="$(RepositoryRoot)src\AspNetCoreModuleV1\AspNetCore\bin\$(Configuration)\Win32\aspnetcore.dll" Link="AspNetCoreModuleV1\x86\aspnetcore.dll" />
       <AncmFiles Include="$(RepositoryRoot)src\AspNetCoreModuleV1\AspNetCore\bin\$(Configuration)\Win32\aspnetcore.pdb" Link="AspNetCoreModuleV1\x86\aspnetcore.pdb" />
-      <AncmFiles Include="$(RepositoryRoot)src\AspNetCoreModuleV2\AspNetCore\bin\$(Configuration)\Win32\aspnetcore.dll" Link="AspNetCoreModuleV2\x86\aspnetcore.dll" />
-      <AncmFiles Include="$(RepositoryRoot)src\AspNetCoreModuleV2\AspNetCore\bin\$(Configuration)\Win32\aspnetcore.pdb" Link="AspNetCoreModuleV2\x86\aspnetcore.pdb" />
+      <AncmFiles Include="$(RepositoryRoot)src\AspNetCoreModuleV2\AspNetCoreShim\bin\$(Configuration)\Win32\aspnetcore.dll" Link="AspNetCoreModuleV2\x86\aspnetcore.dll" />
+      <AncmFiles Include="$(RepositoryRoot)src\AspNetCoreModuleV2\AspNetCoreShim\bin\$(Configuration)\Win32\aspnetcore.pdb" Link="AspNetCoreModuleV2\x86\aspnetcore.pdb" />
       <AncmFiles Include="$(RepositoryRoot)src\AspNetCoreModuleV2\InProcessRequestHandler\bin\$(Configuration)\Win32\aspnetcorerh.dll" Link="AspNetCoreModuleV2\InProcessRequestHandler\x86\aspnetcorerh.dll" />
       <AncmFiles Include="$(RepositoryRoot)src\AspNetCoreModuleV2\InProcessRequestHandler\bin\$(Configuration)\Win32\aspnetcorerh.pdb" Link="AspNetCoreModuleV2\InProcessRequestHandler\x86\aspnetcorerh.pdb" />
       <AncmFiles Include="$(RepositoryRoot)src\AspNetCoreModuleV2\OutOfProcessRequestHandler\bin\$(Configuration)\Win32\aspnetcorerh.dll" Link="AspNetCoreModuleV2\OutOfProcessRequestHandler\x86\aspnetcorerh.dll" />
       <AncmFiles Include="$(RepositoryRoot)src\AspNetCoreModuleV2\OutOfProcessRequestHandler\bin\$(Configuration)\Win32\aspnetcorerh.pdb" Link="AspNetCoreModuleV2\OutOfProcessRequestHandler\x86\aspnetcorerh.pdb" />
       <!-- Schema-->
       <AncmFiles Include="$(RepositoryRoot)src\AspNetCoreModuleV1\AspNetCore\bin\$(Configuration)\x64\aspnetcore_schema.xml" Link="AspNetCoreModuleV1\aspnetcore_schema.xml" />
-      <AncmFiles Include="$(RepositoryRoot)src\AspNetCoreModuleV2\AspNetCore\bin\$(Configuration)\x64\aspnetcore_schema.xml" Link="AspNetCoreModuleV2\aspnetcore_schema.xml" />
-      <AncmFiles Include="$(RepositoryRoot)src\AspNetCoreModuleV2\AspNetCore\bin\$(Configuration)\x64\ancm.mof" Link="AspNetCoreModuleV2\ancm.mof" />
+      <AncmFiles Include="$(RepositoryRoot)src\AspNetCoreModuleV2\AspNetCoreShim\bin\$(Configuration)\x64\aspnetcore_schema.xml" Link="AspNetCoreModuleV2\aspnetcore_schema.xml" />
+      <AncmFiles Include="$(RepositoryRoot)src\AspNetCoreModuleV2\AspNetCoreShim\bin\$(Configuration)\x64\ancm.mof" Link="AspNetCoreModuleV2\ancm.mof" />
     </ItemGroup>
 
     <ZipArchive File="$(AncmZipOutputPath)"
