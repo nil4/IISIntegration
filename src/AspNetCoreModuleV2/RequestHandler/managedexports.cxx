@@ -207,8 +207,8 @@ http_read_request_bytes(
     IHttpRequest *pHttpRequest = (IHttpRequest*)pInProcessHandler->QueryHttpContext()->GetRequest();
 
     // Check if there is anything to read
-    if (pHttpRequest->GetRemainingEntityBytes() > 0)
-    {
+    //if (pHttpRequest->GetRemainingEntityBytes() > 0)
+    //{
         BOOL fAsync = TRUE;
         hr = pHttpRequest->ReadEntityBody(
             pvBuffer,
@@ -222,12 +222,12 @@ http_read_request_bytes(
             // We reached the end of the data
             hr = S_OK;
         }
-    }
+    /*}
     else
     {
         *pdwBytesReceived = 0;
         *pfCompletionPending = FALSE;
-    }
+    }*/
 
     return hr;
 }

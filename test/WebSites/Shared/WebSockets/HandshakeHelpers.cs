@@ -6,9 +6,9 @@ using System.Collections.Generic;
 using System.Security.Cryptography;
 using System.Text;
 
-namespace ANCMStressTestApp
+namespace Microsoft.AspNetCore.Server.IISIntegration
 {
-    // Removed all the 
+    // Removed all the
     internal static class HandshakeHelpers
     {
         public static IEnumerable<KeyValuePair<string, string>> GenerateResponseHeaders(string key)

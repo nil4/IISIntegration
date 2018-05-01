@@ -7,6 +7,7 @@ using System.Net.Http;
 using System.Threading;
 using Microsoft.AspNetCore.Server.IntegrationTesting;
 using Microsoft.Extensions.Logging.Abstractions;
+using Xunit;
 
 namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
 {
@@ -34,8 +35,11 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
             };
 
             _deployer = ApplicationDeployerFactory.Create(deploymentParameters, NullLoggerFactory.Instance);
-            DeploymentResult = _deployer.DeployAsync().Result;
+            DeploymentResult = _deployer.DeployAsync().GetAwaiter().GetResult();
             Client = DeploymentResult.HttpClient;
+            // start the server
+            Client.GetAsync("/LaunchDebugger").GetAwaiter().GetResult();
+
             BaseUri = DeploymentResult.ApplicationBaseUri;
             ShutdownToken = DeploymentResult.HostShutdownToken;
         }

@@ -5,16 +5,19 @@ using System;
 using System.Diagnostics;
 using System.IO;
 using System.Net;
+using System.Net.WebSockets;
 using System.Reflection;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Server.IIS;
 using Microsoft.AspNetCore.Server.IISIntegration;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Primitives;
 using Xunit;
 
@@ -422,6 +425,76 @@ namespace IISTestSite
             {
                 await context.Response.WriteAsync("test");
             });
+        }
+
+        private void WebSocketEcho(IApplicationBuilder app)
+        {
+            app.Run(async context =>
+            {
+                var upgradeFeature = context.Features.Get<IHttpUpgradeFeature>();
+
+                // Generate WebSocket response headers
+                string key = context.Request.Headers[Constants.Headers.SecWebSocketKey].ToString();
+                var responseHeaders = HandshakeHelpers.GenerateResponseHeaders(key);
+                foreach (var headerPair in responseHeaders)
+                {
+                    context.Response.Headers[headerPair.Key] = headerPair.Value;
+                }
+
+                // Upgrade the connection
+                Stream opaqueTransport = await upgradeFeature.UpgradeAsync();
+
+                // Get the WebSocket object
+                var ws = WebSocketProtocol.CreateFromStream(opaqueTransport, isServer: true, subProtocol: null, keepAliveInterval: TimeSpan.FromMinutes(2));
+
+                var appLifetime = app.ApplicationServices.GetRequiredService<IApplicationLifetime>();
+
+                await Echo(ws, appLifetime.ApplicationStopping);
+            });
+        }
+
+        private async Task Echo(WebSocket webSocket, CancellationToken token)
+        {
+            var buffer = new byte[1024 * 4];
+            var result = await webSocket.ReceiveAsync(new ArraySegment<byte>(buffer), token);
+            bool closeFromServer = false;
+            string closeFromServerCmd = "CloseFromServer";
+            int closeFromServerLength = closeFromServerCmd.Length;
+
+            while (!result.CloseStatus.HasValue && !token.IsCancellationRequested && !closeFromServer)
+            {
+                if (result.Count == closeFromServerLength &&
+                    Encoding.ASCII.GetString(buffer).Substring(0, result.Count) == closeFromServerCmd)
+                {
+                    // The client sent "CloseFromServer" text message to request the server to close (a test scenario).
+                    closeFromServer = true;
+                }
+                else
+                {
+                    await webSocket.SendAsync(new ArraySegment<byte>(buffer, 0, result.Count), result.MessageType, result.EndOfMessage, token);
+                    result = await webSocket.ReceiveAsync(new ArraySegment<byte>(buffer), token);
+                }
+            }
+
+            if (result.CloseStatus.HasValue)
+            {
+                // Client-initiated close handshake
+                await webSocket.CloseAsync(result.CloseStatus.Value, result.CloseStatusDescription, CancellationToken.None);
+            }
+            else
+            {
+                // Server-initiated close handshake due to either of the two conditions:
+                // (1) The applicaton host is performing a graceful shutdown.
+                // (2) The client sent "CloseFromServer" text message to request the server to close (a test scenario).
+                await webSocket.CloseOutputAsync(WebSocketCloseStatus.NormalClosure, closeFromServerCmd, CancellationToken.None);
+
+                // The server has sent the Close frame.
+                // Stop sending but keep receiving until we get the Close frame from the client.
+                while (!result.CloseStatus.HasValue)
+                {
+                    result = await webSocket.ReceiveAsync(new ArraySegment<byte>(buffer), CancellationToken.None);
+                }
+            }
         }
 
         private void ReadAndWriteCopyToAsync(IApplicationBuilder app)
