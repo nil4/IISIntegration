@@ -32,6 +32,19 @@
         "ASPNETCORE_ENVIRONMENT": "Development",
         "LAUNCHER_PATH": "$(DotNetPath)"
       }
+    },
+    "ANCM Command prompt": {
+      "commandName": "Executable",
+      "executablePath": "powershell.exe",
+      "commandLineArgs": "-noexit \"Write-Host '$(IISExpressPath) $(IISExpressArguments)'; Write-Host '$(IISPath) $(IISArguments)'; \"",
+      "nativeDebugging": true,
+      "environmentVariables": {
+        "IIS_SITE_PATH": "$(MSBuildThisFileDirectory)",
+        "ANCM_PATH": "$(TargetDir)$(AncmV2Path)",
+        "LAUNCHER_ARGS": "$(TargetPath)",
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "LAUNCHER_PATH": "$(DotNetPath)"
+      }
     }
   }
 }
