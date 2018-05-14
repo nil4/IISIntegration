@@ -9,7 +9,6 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Server.IIS;
-using Microsoft.AspNetCore.Server.IISIntegration;
 
 namespace NativeIISSample
 {
@@ -42,7 +41,7 @@ namespace NativeIISSample
                 await context.Response.WriteAsync(Environment.NewLine);
 
                 await context.Response.WriteAsync("User: " + context.User.Identity.Name + Environment.NewLine);
-                var scheme = await authSchemeProvider.GetSchemeAsync(IISDefaults.AuthenticationScheme);
+                var scheme = await authSchemeProvider.GetSchemeAsync(Microsoft.AspNetCore.Server.IISIntegration.IISDefaults.AuthenticationScheme);
                 await context.Response.WriteAsync("DisplayName: " + scheme?.DisplayName + Environment.NewLine);
 
                 await context.Response.WriteAsync(Environment.NewLine);
@@ -68,7 +67,7 @@ namespace NativeIISSample
 
                 foreach (var varName in IISServerVarNames)
                 {
-                    await context.Response.WriteAsync(varName + ": " + context.GetIISServerVariable(varName) + Environment.NewLine);
+                    await context.Response.WriteAsync(varName + ": " + HttpContextExtensions.GetIISServerVariable(context, varName) + Environment.NewLine);
                 }
 
                 await context.Response.WriteAsync(Environment.NewLine);
@@ -99,7 +98,7 @@ namespace NativeIISSample
         public static void Main(string[] args)
         {
             var host = new WebHostBuilder()
-                .UseIISIntegration()
+                .UseIIS()
                 .UseStartup<Startup>()
                 .Build();
 
