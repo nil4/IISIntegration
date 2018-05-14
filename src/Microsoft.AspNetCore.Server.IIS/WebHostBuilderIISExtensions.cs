@@ -44,7 +44,6 @@ namespace Microsoft.AspNetCore.Hosting
                 hostBuilder.UseContentRoot(iisConfigData.pwzFullApplicationPath);
                 return hostBuilder.ConfigureServices(
                     services => {
-                        services.AddSingleton<IServer, IISHttpServer>();
                         foreach (var service in services)
                         {
                             // TODO: Workaround for removing startup filter from IISIntegration
@@ -55,6 +54,7 @@ namespace Microsoft.AspNetCore.Hosting
                             }
                         }
 
+                        services.AddSingleton<IServer, IISHttpServer>();
                         services.AddSingleton<IStartupFilter>(new IISServerSetupFilter(iisConfigData.pwzVirtualApplicationPath));
                         services.AddAuthenticationCore();
                         services.Configure<IISServerOptions>(
