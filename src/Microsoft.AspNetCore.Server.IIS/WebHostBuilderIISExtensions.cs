@@ -26,8 +26,6 @@ namespace Microsoft.AspNetCore.Hosting
                 throw new ArgumentNullException(nameof(hostBuilder));
             }
 
-            hostBuilder.UseIISIntegration();
-
             // Check if `UseIISServer` was called already
             if (hostBuilder.GetSetting(nameof(UseIIS)) != null)
             {

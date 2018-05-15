@@ -11,7 +11,6 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Http.Features;
-using Microsoft.AspNetCore.Server.IISIntegration;
 using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Server.IIS.Core

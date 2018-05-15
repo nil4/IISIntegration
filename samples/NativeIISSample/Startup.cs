@@ -41,7 +41,7 @@ namespace NativeIISSample
                 await context.Response.WriteAsync(Environment.NewLine);
 
                 await context.Response.WriteAsync("User: " + context.User.Identity.Name + Environment.NewLine);
-                var scheme = await authSchemeProvider.GetSchemeAsync(Microsoft.AspNetCore.Server.IISIntegration.IISDefaults.AuthenticationScheme);
+                var scheme = await authSchemeProvider.GetSchemeAsync(IISDefaults.AuthenticationScheme);
                 await context.Response.WriteAsync("DisplayName: " + scheme?.DisplayName + Environment.NewLine);
 
                 await context.Response.WriteAsync(Environment.NewLine);

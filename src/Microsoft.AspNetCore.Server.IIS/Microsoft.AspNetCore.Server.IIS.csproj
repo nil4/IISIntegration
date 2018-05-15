@@ -9,19 +9,25 @@
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageTags>aspnetcore;iis</PackageTags>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <PackageSigningCertName>Microsoft</PackageSigningCertName>
   </PropertyGroup>
 
   <ItemGroup>
     <SignedPackageFile Include="aspnetcorerh_x86" PackagePath="runtimes/win-x86/nativeassets/$(TargetFramework)/aspnetcorerh.dll" Certificate="Microsoft" />
     <SignedPackageFile Include="aspnetcorerh_x64" PackagePath="runtimes/win-x64/nativeassets/$(TargetFramework)/aspnetcorerh.dll" Certificate="Microsoft" />
+    <SignedPackageFile Include="aspnetcorerh_x64" PackagePath="runtimes/win-x64/nativeassets/$(TargetFramework)/aspnetcorerh.dll" Certificate="Microsoft" />
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.AspNetCore.Server.IISIntegration" Version="$(StableMicrosoftAspNetCoreServerIISIntegrationPackageVersion)" />
-
     <PackageReference Include="Microsoft.AspNetCore.HttpSys.Sources" PrivateAssets="All" Version="$(MicrosoftAspNetCoreHttpSysSourcesPackageVersion)" />
     <PackageReference Include="Microsoft.Extensions.Buffers.Sources" Version="$(MicrosoftExtensionsBuffersSourcesPackageVersion)" PrivateAssets="All" />
     <PackageReference Include="Microsoft.Extensions.Buffers.MemoryPool.Sources" Version="$(MicrosoftExtensionsBuffersMemoryPoolSourcesPackageVersion)" PrivateAssets="All" />
+
+    <PackageReference Include="System.IO.Pipelines" Version="$(SystemIOPipelinesPackageVersion)" />
+    <PackageReference Include="System.Security.Principal.Windows" Version="$(SystemSecurityPrincipalWindowsPackageVersion)" />
+
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.Core" Version="$(MicrosoftAspNetCoreAuthenticationCorePackageVersion)" />
+    <PackageReference Include="Microsoft.AspNetCore.Hosting.Abstractions" Version="$(MicrosoftAspNetCoreHostingAbstractionsPackageVersion)" />
   </ItemGroup>
 
   <ItemGroup>
