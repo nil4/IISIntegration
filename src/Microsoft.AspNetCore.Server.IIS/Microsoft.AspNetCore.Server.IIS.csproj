@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netcoreapp2.1</TargetFramework>
+    <TargetFramework>netstandard2.0</TargetFramework>
     <PackageId>Microsoft.AspNetCore.Server.IIS</PackageId>
     <Description>Provides support for hosting ASP.NET Core in IIS using the AspNetCoreModule.</Description>
     <IsPackable Condition="'$(OS)' != 'Windows_NT'">false</IsPackable>
@@ -12,7 +12,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <SignedPackageFile Include="$(TargetPath)" PackagePath="lib/netcoreapp2.1/Microsoft.AspNetCore.Server.IIS.dll" Certificate="Microsoft" />
+    <SignedPackageFile Include="$(TargetPath)" PackagePath="lib/netstandard2.0/Microsoft.AspNetCore.Server.IIS.dll" Certificate="Microsoft" />
     <SignedPackageFile Include="aspnetcorerh_x86" PackagePath="runtimes/win-x86/nativeassets/$(TargetFramework)/aspnetcorerh.dll" Certificate="Microsoft" />
     <SignedPackageFile Include="aspnetcorerh_x64" PackagePath="runtimes/win-x64/nativeassets/$(TargetFramework)/aspnetcorerh.dll" Certificate="Microsoft" />
   </ItemGroup>
