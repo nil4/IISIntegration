@@ -41,7 +41,7 @@ namespace NativeIISSample
                 await context.Response.WriteAsync(Environment.NewLine);
 
                 await context.Response.WriteAsync("User: " + context.User.Identity.Name + Environment.NewLine);
-                var scheme = await authSchemeProvider.GetSchemeAsync(IISDefaults.AuthenticationScheme);
+                var scheme = await authSchemeProvider.GetSchemeAsync(IISServerDefaults.AuthenticationScheme);
                 await context.Response.WriteAsync("DisplayName: " + scheme?.DisplayName + Environment.NewLine);
 
                 await context.Response.WriteAsync(Environment.NewLine);
@@ -67,7 +67,7 @@ namespace NativeIISSample
 
                 foreach (var varName in IISServerVarNames)
                 {
-                    await context.Response.WriteAsync(varName + ": " + HttpContextExtensions.GetIISServerVariable(context, varName) + Environment.NewLine);
+                    await context.Response.WriteAsync(varName + ": " + context.GetIISServerVariable(varName) + Environment.NewLine);
                 }
 
                 await context.Response.WriteAsync(Environment.NewLine);

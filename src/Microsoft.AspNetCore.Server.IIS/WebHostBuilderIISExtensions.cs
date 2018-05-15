@@ -26,32 +26,15 @@ namespace Microsoft.AspNetCore.Hosting
                 throw new ArgumentNullException(nameof(hostBuilder));
             }
 
-            // Check if `UseIISServer` was called already
-            if (hostBuilder.GetSetting(nameof(UseIIS)) != null)
-            {
-                return hostBuilder;
-            }
-
             // Check if in process
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows) && NativeMethods.IsAspNetCoreModuleLoaded())
             {
-                hostBuilder.UseSetting(nameof(UseIIS), "true");
                 hostBuilder.CaptureStartupErrors(true);
 
                 var iisConfigData = NativeMethods.HttpGetApplicationProperties();
                 hostBuilder.UseContentRoot(iisConfigData.pwzFullApplicationPath);
                 return hostBuilder.ConfigureServices(
                     services => {
-                        foreach (var service in services)
-                        {
-                            // TODO: Workaround for removing startup filter from IISIntegration
-                            if (service.ImplementationInstance?.GetType().Name == "IISServerSetupFilter")
-                            {
-                                services.Remove(service);
-                                break;
-                            }
-                        }
-
                         services.AddSingleton<IServer, IISHttpServer>();
                         services.AddSingleton<IStartupFilter>(new IISServerSetupFilter(iisConfigData.pwzVirtualApplicationPath));
                         services.AddAuthenticationCore();

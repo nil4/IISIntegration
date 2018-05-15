@@ -3,7 +3,7 @@
 
 namespace Microsoft.AspNetCore.Server.IIS
 {
-    public class IISDefaults
+    public class IISServerDefaults
     {
         public static readonly string AuthenticationScheme = "Windows";
         public const string Negotiate = "Negotiate";

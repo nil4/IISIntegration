@@ -3,10 +3,10 @@
 
 namespace Microsoft.AspNetCore.Builder
 {
-    internal class IISServerOptions
+    public class IISServerOptions
     {
         /// <summary>
-        /// If true the middleware should set HttpContext.User. If false the middleware will only provide an
+        /// If true the server should set HttpContext.User. If false the server will only provide an
         /// identity when explicitly requested by the AuthenticationScheme.
         /// Note Windows Authentication must also be enabled in IIS for this to work.
         /// </summary>

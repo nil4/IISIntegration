@@ -60,7 +60,7 @@ namespace IISTestSite
                 }
                 else
                 {
-                    await ctx.ChallengeAsync(IISDefaults.AuthenticationScheme);
+                    await ctx.ChallengeAsync(IISServerDefaults.AuthenticationScheme);
                 }
             });
         }
@@ -69,7 +69,7 @@ namespace IISTestSite
         {
             app.Run(async ctx =>
             {
-                await ctx.ForbidAsync(IISDefaults.AuthenticationScheme);
+                await ctx.ForbidAsync(IISServerDefaults.AuthenticationScheme);
             });
         }
 
@@ -83,7 +83,7 @@ namespace IISTestSite
                 }
                 else
                 {
-                    await ctx.ChallengeAsync(IISDefaults.AuthenticationScheme);
+                    await ctx.ChallengeAsync(IISServerDefaults.AuthenticationScheme);
                 }
             });
         }

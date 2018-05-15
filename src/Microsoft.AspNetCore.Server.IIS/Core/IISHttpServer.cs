@@ -64,7 +64,7 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
 
             if (_options.ForwardWindowsAuthentication)
             {
-                authentication.AddScheme(new AuthenticationScheme(IISDefaults.AuthenticationScheme, _options.AuthenticationDisplayName, typeof(IISServerAuthenticationHandler)));
+                authentication.AddScheme(new AuthenticationScheme(IISServerDefaults.AuthenticationScheme, _options.AuthenticationDisplayName, typeof(IISServerAuthenticationHandler)));
             }
         }
 
