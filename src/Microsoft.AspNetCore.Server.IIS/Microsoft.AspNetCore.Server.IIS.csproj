@@ -9,12 +9,11 @@
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageTags>aspnetcore;iis</PackageTags>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-    <PackageSigningCertName>Microsoft</PackageSigningCertName>
   </PropertyGroup>
 
   <ItemGroup>
+    <SignedPackageFile Include="$(TargetPath)" PackagePath="lib/netcoreapp2.1/Microsoft.AspNetCore.Server.IIS.dll" Certificate="Microsoft" />
     <SignedPackageFile Include="aspnetcorerh_x86" PackagePath="runtimes/win-x86/nativeassets/$(TargetFramework)/aspnetcorerh.dll" Certificate="Microsoft" />
-    <SignedPackageFile Include="aspnetcorerh_x64" PackagePath="runtimes/win-x64/nativeassets/$(TargetFramework)/aspnetcorerh.dll" Certificate="Microsoft" />
     <SignedPackageFile Include="aspnetcorerh_x64" PackagePath="runtimes/win-x64/nativeassets/$(TargetFramework)/aspnetcorerh.dll" Certificate="Microsoft" />
   </ItemGroup>
 
