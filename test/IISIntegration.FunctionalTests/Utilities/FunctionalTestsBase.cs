@@ -28,5 +28,10 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
         {
             _deployer?.Dispose();
         }
+
+        public void StopServer()
+        {
+            _deployer?.Dispose();
+        }
     }
 }

@@ -29,7 +29,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
 
             Assert.Equal(HttpStatusCode.InternalServerError, response.StatusCode);
 
-            Dispose();
+            StopServer();
 
             Assert.Contains(TestSink.Writes, context => context.Message.Contains($"Random number: {randomNumberString}"));
         }
@@ -50,7 +50,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
 
             Assert.Equal(HttpStatusCode.InternalServerError, response.StatusCode);
 
-            Dispose();
+            StopServer();
 
             Assert.Contains(TestSink.Writes, context => context.Message.Contains(new string('a', 4096)));
         }

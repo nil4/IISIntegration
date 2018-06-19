@@ -127,7 +127,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
             var response = await deploymentResult.HttpClient.GetAsync("/");
             Assert.False(response.IsSuccessStatusCode);
 
-            Dispose();
+            StopServer();
 
             Assert.Contains(TestSink.Writes, context => context.Message.Contains("Application is running inside IIS process but is not configured to use IIS server"));
         }
