@@ -35,11 +35,7 @@ public:
 
     virtual
     VOID
-    ReferenceApplication() = 0;
-
-    virtual
-    VOID
-    DereferenceApplication() = 0;
+    Release() = 0;
 
     virtual
     HRESULT

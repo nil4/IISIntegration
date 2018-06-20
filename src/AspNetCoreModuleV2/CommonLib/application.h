@@ -22,18 +22,23 @@ public:
     }
 
     VOID
-    ReferenceApplication() override
+    Release() override
+    {
+        DereferenceApplication();
+    }
+
+    VOID
+    ReferenceApplication()
     {
         InterlockedIncrement(&m_cRefs);
     }
 
     VOID
-    DereferenceApplication() override
+    DereferenceApplication()
     {
         DBG_ASSERT(m_cRefs != 0);
 
-        LONG cRefs = 0;
-        if ((cRefs = InterlockedDecrement(&m_cRefs)) == 0)
+        if (InterlockedDecrement(&m_cRefs) == 0)
         {
             delete this;
         }

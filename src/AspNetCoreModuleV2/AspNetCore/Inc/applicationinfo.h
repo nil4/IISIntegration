@@ -5,6 +5,8 @@
 
 #include "precomp.hxx"
 
+#include <memory>
+
 #include "hostfxroptions.h"
 #include "appoffline.h"
 #include "filewatcher.h"
@@ -26,6 +28,11 @@ HRESULT
 
 extern BOOL     g_fRecycleProcessCalled;
 extern PFN_ASPNETCORE_CREATE_APPLICATION      g_pfnAspNetCoreCreateApplication;
+
+VOID ReleaseApplication(IAPPLICATION* application)
+{
+    application->Release();
+}
 
 class APPLICATION_INFO
 {
@@ -117,14 +124,10 @@ public:
     // Otherwise memory leak
     //
     VOID
-    ExtractApplication(IAPPLICATION** ppApplication)
+    ExtractApplication(std::shared_ptr<IAPPLICATION>& ppApplication)
     {
         AcquireSRWLockShared(&m_srwLock);
-        if (m_pApplication != NULL)
-        {
-            m_pApplication->ReferenceApplication();
-        }
-        *ppApplication = m_pApplication;
+        ppApplication = m_pApplication;
         ReleaseSRWLockShared(&m_srwLock);
     }
 
@@ -153,7 +156,7 @@ private:
     APP_OFFLINE_HTM        *m_pAppOfflineHtm;
     FILE_WATCHER_ENTRY     *m_pFileWatcherEntry;
     ASPNETCORE_SHIM_CONFIG *m_pConfiguration;
-    IAPPLICATION           *m_pApplication;
+    std::shared_ptr<IAPPLICATION> m_pApplication;
     SRWLOCK                 m_srwLock;
     IHttpServer            *m_pServer;
     PFN_ASPNETCORE_CREATE_APPLICATION      m_pfnAspNetCoreCreateApplication;

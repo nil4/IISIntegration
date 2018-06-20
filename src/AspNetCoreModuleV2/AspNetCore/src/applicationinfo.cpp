@@ -33,8 +33,7 @@ APPLICATION_INFO::~APPLICATION_INFO()
     if (m_pApplication != NULL)
     {
         // shutdown the application
-        m_pApplication->ShutDown();
-        m_pApplication->DereferenceApplication();
+        m_pApplication->get()->ShutDown();
         m_pApplication = NULL;
     }
 
@@ -198,12 +197,12 @@ APPLICATION_INFO::EnsureApplicationCreated(
     STACK_STRU(struFileName, 300);  // >MAX_PATH
     STRU                struHostFxrDllLocation;
 
-    if (m_pApplication != NULL)
+    if (m_pApplication)
     {
         goto Finished;
     }
 
-    if (m_pApplication == NULL)
+    if (!m_pApplication)
     {
         AcquireSRWLockExclusive(&m_srwLock);
         fLocked = TRUE;
@@ -237,7 +236,7 @@ APPLICATION_INFO::EnsureApplicationCreated(
 
             hr = m_pfnAspNetCoreCreateApplication(m_pServer, pHttpContext, struExeLocation.QueryStr(), &pApplication);
 
-            m_pApplication = pApplication;
+            m_pApplication.reset(pApplication, ReleaseApplication);
         }
     }
 
@@ -561,7 +560,7 @@ Finished:
 VOID
 APPLICATION_INFO::RecycleApplication()
 {
-    IAPPLICATION* pApplication = NULL;
+    std::shared_ptr<IAPPLICATION>  pApplication = NULL;
     HANDLE       hThread = INVALID_HANDLE_VALUE;
     BOOL         fLockAcquired = FALSE;
 
@@ -581,7 +580,7 @@ APPLICATION_INFO::RecycleApplication()
                 // For inprocess, as recycle will lead to shutdown later, leave m_pApplication
                 // to not block incoming requests till worker process shutdown
                 //
-                m_pApplication = NULL;
+                m_pApplication = nullptr;
             }
             else
             {
@@ -596,7 +595,7 @@ APPLICATION_INFO::RecycleApplication()
                 NULL,       // default security attributes
                 0,          // default stack size
                 (LPTHREAD_START_ROUTINE)DoRecycleApplication,
-                pApplication,       // thread function arguments
+                &pApplication,       // thread function arguments
                 0,          // default creation flags
                 NULL);      // receive thread identifier
         }
@@ -646,15 +645,14 @@ APPLICATION_INFO::DoRecycleApplication(
         pApplication->Recycle();
 
         // Decrement the ref count as we reference it in RecycleApplication.
-        pApplication->DereferenceApplication();
-    }
+        pApplication->Release();
+''    }
 }
 
 
 VOID
 APPLICATION_INFO::ShutDownApplication()
 {
-    IAPPLICATION* pApplication = NULL;
     BOOL         fLockAcquired = FALSE;
 
     // pApplication can be NULL due to app_offline
@@ -664,12 +662,9 @@ APPLICATION_INFO::ShutDownApplication()
         fLockAcquired = TRUE;
         if (m_pApplication != NULL)
         {
-            pApplication = m_pApplication;
-
             // Set m_pApplication to NULL first to prevent anyone from using it
-            m_pApplication = NULL;
-            pApplication->ShutDown();
-            pApplication->DereferenceApplication();
+            m_pApplication->ShutDown();
+            m_pApplication = nullptr;
         }
 
         if (fLockAcquired)
