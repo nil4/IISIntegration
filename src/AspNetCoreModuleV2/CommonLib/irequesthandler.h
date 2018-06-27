@@ -46,3 +46,9 @@ public:
         VOID
     ) = 0;
 };
+
+
+struct IREQUEST_HANDLER_DELETER
+{
+  void operator()(IREQUEST_HANDLER* app) const { app->DereferenceRequestHandler(); }
+};

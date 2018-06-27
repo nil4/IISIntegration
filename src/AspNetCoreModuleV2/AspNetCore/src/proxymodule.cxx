@@ -48,23 +48,10 @@ Return value:
 }
 
 ASPNET_CORE_PROXY_MODULE::ASPNET_CORE_PROXY_MODULE(
-) : m_pApplicationInfo(NULL), m_pHandler(NULL)
+) :
+    m_pApplicationInfo(nullptr),
+    m_pHandler(nullptr)
 {
-}
-
-ASPNET_CORE_PROXY_MODULE::~ASPNET_CORE_PROXY_MODULE()
-{
-    if (m_pApplicationInfo != NULL)
-    {
-        m_pApplicationInfo->DereferenceApplicationInfo();
-        m_pApplicationInfo = NULL;
-    }
-
-    if (m_pHandler != NULL)
-    {
-        m_pHandler->DereferenceRequestHandler();
-        m_pHandler = NULL;
-    }
 }
 
 __override
@@ -77,7 +64,7 @@ ASPNET_CORE_PROXY_MODULE::OnExecuteRequestHandler(
     HRESULT hr = S_OK;
     APPLICATION_MANAGER   *pApplicationManager = NULL;
     REQUEST_NOTIFICATION_STATUS retVal = RQ_NOTIFICATION_CONTINUE;
-    IAPPLICATION* pApplication = NULL;
+    std::unique_ptr<IAPPLICATION, IAPPLICATION_DELETER> pApplication = nullptr;
     STRU struExeLocation;
     try
     {
@@ -89,15 +76,14 @@ ASPNET_CORE_PROXY_MODULE::OnExecuteRequestHandler(
         }
 
         pApplicationManager = APPLICATION_MANAGER::GetInstance();
-
-        hr = pApplicationManager->GetOrCreateApplicationInfo(
-            g_pHttpServer,
-        pHttpContext,
-            &m_pApplicationInfo);
+        APPLICATION_INFO *pApplicationInfo;
+        hr = pApplicationManager->GetOrCreateApplicationInfo(g_pHttpServer, pHttpContext, &pApplicationInfo);
         if (FAILED(hr))
         {
             goto Finished;
         }
+
+        m_pApplicationInfo.reset(pApplicationInfo);
 
     if (!m_pApplicationInfo->QueryAllowStart())
     {
@@ -145,26 +131,26 @@ ASPNET_CORE_PROXY_MODULE::OnExecuteRequestHandler(
             goto Finished;
         }
 
-        m_pApplicationInfo->ExtractApplication(&pApplication);
+        m_pApplicationInfo->ExtractApplication(pApplication);
 
-        // make sure application is in running state	
-        // cannot recreate the application as we cannot reload clr for inprocess	
-        if (pApplication != NULL &&
+        // make sure application is in running state
+        // cannot recreate the application as we cannot reload clr for inprocess
+        if (pApplication &&
             pApplication->QueryStatus() != APPLICATION_STATUS::RUNNING &&
             pApplication->QueryStatus() != APPLICATION_STATUS::STARTING)
         {
             hr = HRESULT_FROM_WIN32(ERROR_SERVER_DISABLED);
             goto Finished;
         }
+        IREQUEST_HANDLER *pHandler;
         // Create RequestHandler and process the request
-        hr = pApplication->CreateHandler(pHttpContext,
-                    &m_pHandler);
+        hr = pApplication->CreateHandler(pHttpContext, &pHandler);
 
         if (FAILED(hr))
         {
             goto Finished;
         }
-
+        m_pHandler.reset(pHandler);
         retVal = m_pHandler->OnExecuteRequestHandler();
     }
     catch (...)
@@ -186,10 +172,6 @@ Finished:
         }
     }
 
-    if (pApplication != NULL)
-    {
-        pApplication->DereferenceApplication();
-    }
     return retVal;
 }
 

@@ -118,14 +118,15 @@ public:
     // Otherwise memory leak
     //
     VOID
-    ExtractApplication(IAPPLICATION** ppApplication)
+    ExtractApplication(std::unique_ptr<IAPPLICATION, IAPPLICATION_DELETER>& ppApplication) const
     {
         SRWSharedLock lock(m_srwLock);
-        if (m_pApplication != NULL)
+        if (m_pApplication == NULL)
         {
-            m_pApplication->ReferenceApplication();
+            return;
         }
-        *ppApplication = m_pApplication;
+        ppApplication.reset(m_pApplication);
+        ppApplication->ReferenceApplication();
     }
 
     VOID
@@ -232,4 +233,9 @@ private:
 
     APPLICATION_INFO_HASH(const APPLICATION_INFO_HASH &);
     void operator=(const APPLICATION_INFO_HASH &);
+};
+
+struct APPLICATION_INFO_DELETER
+{
+  void operator()(APPLICATION_INFO* app) const { app->DereferenceApplicationInfo(); }
 };

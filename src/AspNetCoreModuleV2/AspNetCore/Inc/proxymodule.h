@@ -14,9 +14,7 @@ class ASPNET_CORE_PROXY_MODULE : public CHttpModule
 {
  public:
 
-     ASPNET_CORE_PROXY_MODULE();
-
-    ~ASPNET_CORE_PROXY_MODULE();
+    ASPNET_CORE_PROXY_MODULE();
 
     void * operator new(size_t size, IModuleAllocator * pPlacement)
     {
@@ -48,9 +46,8 @@ class ASPNET_CORE_PROXY_MODULE : public CHttpModule
 
  private:
 
-    APPLICATION_INFO *m_pApplicationInfo;
-    IAPPLICATION      *m_pApplication;
-    IREQUEST_HANDLER  *m_pHandler;
+    std::unique_ptr<APPLICATION_INFO, APPLICATION_INFO_DELETER> m_pApplicationInfo;
+    std::unique_ptr<IREQUEST_HANDLER, IREQUEST_HANDLER_DELETER>     m_pHandler;
 };
 
 class ASPNET_CORE_PROXY_MODULE_FACTORY : public IHttpModuleFactory

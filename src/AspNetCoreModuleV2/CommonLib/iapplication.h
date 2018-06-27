@@ -53,3 +53,8 @@ public:
         _In_ LPCWSTR           pzName,
         _In_ LPCWSTR           pzValue) = 0;
 };
+
+struct IAPPLICATION_DELETER
+{
+  void operator()(IAPPLICATION* app) const { app->DereferenceApplication(); }
+};
