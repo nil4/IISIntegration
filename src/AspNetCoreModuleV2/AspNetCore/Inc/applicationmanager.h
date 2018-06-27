@@ -70,7 +70,7 @@ public:
     GetOrCreateApplicationInfo(
         _In_ IHttpServer*          pServer,
         _In_ IHttpContext*         pHttpContext,
-        _Out_ APPLICATION_INFO **  ppApplicationInfo
+        _Out_ std::unique_ptr<APPLICATION_INFO, APPLICATION_INFO_DELETER>&  ppApplicationInfo
     );
 
     HRESULT

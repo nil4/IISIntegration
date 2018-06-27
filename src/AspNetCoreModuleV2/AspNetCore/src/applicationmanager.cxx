@@ -19,7 +19,7 @@ HRESULT
 APPLICATION_MANAGER::GetOrCreateApplicationInfo(
     _In_ IHttpServer*          pServer,
     _In_ IHttpContext*         pHttpContext,
-    _Out_ APPLICATION_INFO **  ppApplicationInfo
+    _Out_ std::unique_ptr<APPLICATION_INFO, APPLICATION_INFO_DELETER>&  ppApplicationInfo
 )
 {
     HRESULT                 hr = S_OK;
@@ -35,7 +35,7 @@ APPLICATION_MANAGER::GetOrCreateApplicationInfo(
     DBG_ASSERT(pHttpContext);
     DBG_ASSERT(ppApplicationInfo);
 
-    *ppApplicationInfo = NULL;
+    ppApplicationInfo.reset(nullptr);
 
     // The configuration path is unique for each application and is used for the
     // key in the applicationInfoHash.
@@ -50,10 +50,10 @@ APPLICATION_MANAGER::GetOrCreateApplicationInfo(
             hr = HRESULT_FROM_WIN32(ERROR_SERVER_SHUTDOWN_IN_PROGRESS);
             goto Finished;
         }
-        m_pApplicationInfoHash->FindKey(pszApplicationId, ppApplicationInfo);
+        m_pApplicationInfoHash->FindKey(pszApplicationId, &pApplicationInfo);
     }
 
-    if (*ppApplicationInfo == NULL)
+    if (pApplicationInfo == NULL)
     {
         pApplicationInfo = new APPLICATION_INFO();
         if (pApplicationInfo == NULL)
@@ -76,9 +76,9 @@ APPLICATION_MANAGER::GetOrCreateApplicationInfo(
             hr = HRESULT_FROM_WIN32(ERROR_SERVER_SHUTDOWN_IN_PROGRESS);
             goto Finished;
         }
-        m_pApplicationInfoHash->FindKey(pszApplicationId, ppApplicationInfo);
+        m_pApplicationInfoHash->FindKey(pszApplicationId, &pApplicationInfo);
 
-        if (*ppApplicationInfo != NULL)
+        if (pApplicationInfo != NULL)
         {
             // someone else created the application
             goto Finished;
@@ -116,7 +116,7 @@ APPLICATION_MANAGER::GetOrCreateApplicationInfo(
             }
         }
 
-        *ppApplicationInfo = pApplicationInfo;
+        ppApplicationInfo.reset(pApplicationInfo);
         pApplicationInfo->StartMonitoringAppOffline();
 
         pApplicationInfo = NULL;
