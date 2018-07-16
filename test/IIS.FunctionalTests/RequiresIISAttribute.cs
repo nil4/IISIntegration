@@ -51,7 +51,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
 
             if (!File.Exists(ancmConfigPath))
             {
-                _skipReasonStatic = "IIS Schema is not installed.";
+                _skipReasonStatic = "ANCM Schema is not installed.";
                 return;
             }
 
@@ -63,8 +63,28 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
             }
             catch
             {
-                _skipReasonStatic = "Could not read ANCM schema configuration";
+                _skipReasonStatic = "Could not read ANCM schema configuration.";
                 return;
+            }
+
+            var iisRegistryKey = Registry.LocalMachine.OpenSubKey(@"Software\Microsoft\InetStp", writable: false);
+            if (iisRegistryKey == null)
+            {
+                _skipReasonStatic = "IIS is not installed on the machine.";
+                _poolEnvironmentVariablesAvailable = false;
+                return;
+            }
+            else
+            {
+                var majorVersion = (int)iisRegistryKey.GetValue("MajorVersion", -1);
+                var minorVersion = (int)iisRegistryKey.GetValue("MinorVersion", -1);
+                var version = new Version(majorVersion, minorVersion);
+                if (version < new Version(7, 0))
+                {
+                    _skipReasonStatic = "IIS version 7.0 or higher must be installed on the test machine.";
+                    return;
+                }
+                _poolEnvironmentVariablesAvailable = version >= new Version(10, 0);
             }
 
             _isMetStatic = ancmConfig
@@ -77,19 +97,6 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
             _websocketsAvailable = File.Exists(Path.Combine(Environment.SystemDirectory, "inetsrv", "iiswsock.dll"));
 
             _windowsAuthAvailable = File.Exists(Path.Combine(Environment.SystemDirectory, "inetsrv", "authsspi.dll"));
-
-            var iisRegistryKey = Registry.LocalMachine.OpenSubKey(@"Software\Microsoft\InetStp", writable: false);
-            if (iisRegistryKey == null)
-            {
-                _poolEnvironmentVariablesAvailable = false;
-            }
-            else
-            {
-                var majorVersion = (int)iisRegistryKey.GetValue("MajorVersion", -1);
-                var minorVersion = (int)iisRegistryKey.GetValue("MinorVersion", -1);
-                var version = new Version(majorVersion, minorVersion);
-                _poolEnvironmentVariablesAvailable = version >= new Version(10, 0);
-            }
         }
 
         public RequiresIISAttribute() { }
