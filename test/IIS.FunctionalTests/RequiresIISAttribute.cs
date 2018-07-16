@@ -29,7 +29,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         {
             if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
-                _skipReasonStatic = "IIS tests can only be run on Windows";
+                _skipReasonStatic = "IIS tests can only be run on Windows.";
                 return;
             }
 
@@ -47,26 +47,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
                 return;
             }
 
-            var ancmConfigPath = Path.Combine(Environment.SystemDirectory, "inetsrv", "config", "schema", "aspnetcore_schema_v2.xml");
-
-            if (!File.Exists(ancmConfigPath))
-            {
-                _skipReasonStatic = "ANCM Schema is not installed.";
-                return;
-            }
-
-            XDocument ancmConfig;
-
-            try
-            {
-                ancmConfig = XDocument.Load(ancmConfigPath);
-            }
-            catch
-            {
-                _skipReasonStatic = "Could not read ANCM schema configuration.";
-                return;
-            }
-
+         
             var iisRegistryKey = Registry.LocalMachine.OpenSubKey(@"Software\Microsoft\InetStp", writable: false);
             if (iisRegistryKey == null)
             {
@@ -85,6 +66,37 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
                     return;
                 }
                 _poolEnvironmentVariablesAvailable = version >= new Version(10, 0);
+            }
+
+            var type = Type.GetTypeFromCLSID(new Guid("2B72133B-3F5B-4602-8952-803546CE3344"), throwOnError: false);
+
+            try
+            {
+                var _ = Activator.CreateInstance(type);
+            }
+            catch (COMException comException)
+            {
+                _skipReasonStatic = $"IIS installtion doesn't have the correct features. ComException: {comException.Message}.";
+                return;
+            }
+            var ancmConfigPath = Path.Combine(Environment.SystemDirectory, "inetsrv", "config", "schema", "aspnetcore_schema_v2.xml");
+
+            if (!File.Exists(ancmConfigPath))
+            {
+                _skipReasonStatic = "ANCM Schema is not installed.";
+                return;
+            }
+
+            XDocument ancmConfig;
+
+            try
+            {
+                ancmConfig = XDocument.Load(ancmConfigPath);
+            }
+            catch
+            {
+                _skipReasonStatic = "Could not read ANCM schema configuration.";
+                return;
             }
 
             _isMetStatic = ancmConfig
