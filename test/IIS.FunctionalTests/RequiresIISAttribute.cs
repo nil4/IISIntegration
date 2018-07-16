@@ -71,7 +71,8 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
 
             try
             {
-                var _ = Activator.CreateInstance(type);
+                var obj = Activator.CreateInstance(type);
+                var _ = obj.GetType().Name;
             }
             catch (COMException comException)
             {
