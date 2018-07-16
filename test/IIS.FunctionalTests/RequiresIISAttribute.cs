@@ -46,7 +46,6 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
                 _skipReasonStatic += "The machine does not have IIS installed.";
                 return;
             }
-
          
             var iisRegistryKey = Registry.LocalMachine.OpenSubKey(@"Software\Microsoft\InetStp", writable: false);
             if (iisRegistryKey == null)
