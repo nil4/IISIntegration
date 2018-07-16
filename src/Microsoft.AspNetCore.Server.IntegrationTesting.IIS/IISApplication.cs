@@ -23,7 +23,6 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
         private readonly ServerManager _serverManager = new ServerManager();
         private readonly DeploymentParameters _deploymentParameters;
         private readonly ILogger _logger;
-        private readonly string _ancmVersion;
         private readonly string _ancmDllName;
         private readonly string _apphostConfigBackupPath;
         private static readonly string _apphostConfigPath = Path.Combine(
@@ -36,7 +35,6 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
         {
             _deploymentParameters = deploymentParameters;
             _logger = logger;
-            _ancmVersion = deploymentParameters.AncmVersion.ToString();
             _ancmDllName = deploymentParameters.AncmVersion == AncmVersion.AspNetCoreModuleV2 ? "aspnetcorev2.dll" : "aspnetcore.dll";
             WebSiteName = CreateTestSiteName();
             AppPoolName = $"{WebSiteName}Pool";
@@ -284,22 +282,23 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
             var ancmFile = GetAncmLocation(dllRoot);
 
             var globalModulesSection = config.GetSection("system.webServer/globalModules");
+            var ancmVersion = _deploymentParameters.AncmVersion.ToString();
             var globalConfigElement = globalModulesSection
                                         .GetCollection()
-                                        .Where(element => (string)element["name"] == _ancmVersion)
+                                        .Where(element => (string)element["name"] == ancmVersion)
                                         .FirstOrDefault();
 
             if (globalConfigElement == null)
             {
-                _logger.LogInformation($"Could not find {_ancmVersion} section in global modules; creating section.");
+                _logger.LogInformation($"Could not find {ancmVersion} section in global modules; creating section.");
                 var addElement = globalModulesSection.GetCollection().CreateElement("add");
-                addElement["name"] = _ancmVersion;
+                addElement["name"] = ancmVersion;
                 addElement["image"] = ancmFile;
                 globalModulesSection.GetCollection().Add(addElement);
             }
             else
             {
-                _logger.LogInformation($"Replacing {_ancmVersion} section in global modules with {ancmFile}");
+                _logger.LogInformation($"Replacing {ancmVersion} section in global modules with {ancmFile}");
                 globalConfigElement["image"] = ancmFile;
             }
         }
@@ -307,12 +306,14 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
         private void SetModulesSection(Configuration config)
         {
             var modulesSection = config.GetSection("system.webServer/modules");
-            var moduleConfigElement = modulesSection.GetCollection().Where(element => (string)element["name"] == _ancmVersion).FirstOrDefault();
+            var ancmVersion = _deploymentParameters.AncmVersion.ToString();
+
+            var moduleConfigElement = modulesSection.GetCollection().Where(element => (string)element["name"] == ancmVersion).FirstOrDefault();
             if (moduleConfigElement == null)
             {
-                _logger.LogInformation($"Could not find {_ancmVersion} section in modules; creating section.");
+                _logger.LogInformation($"Could not find {ancmVersion} section in modules; creating section.");
                 var moduleElement = modulesSection.GetCollection().CreateElement("add");
-                moduleElement["name"] = _ancmVersion;
+                moduleElement["name"] = ancmVersion;
                 modulesSection.GetCollection().Add(moduleElement);
             }
         }
