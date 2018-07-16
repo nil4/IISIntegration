@@ -225,22 +225,14 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
 
         private ApplicationPool ConfigureAppPool(string contentRoot)
         {
-            try
-            {
-                var pool = _serverManager.ApplicationPools.Add(AppPoolName);
-                pool.ProcessModel.IdentityType = ProcessModelIdentityType.LocalSystem;
-                pool.ManagedRuntimeVersion = string.Empty;
-                pool.StartMode = StartMode.AlwaysRunning;
-                AddEnvironmentVariables(contentRoot, pool);
+            var pool = _serverManager.ApplicationPools.Add(AppPoolName);
+            pool.ProcessModel.IdentityType = ProcessModelIdentityType.LocalSystem;
+            pool.ManagedRuntimeVersion = string.Empty;
+            pool.StartMode = StartMode.AlwaysRunning;
+            AddEnvironmentVariables(contentRoot, pool);
 
-                _logger.LogInformation($"Configured AppPool {AppPoolName}");
-                return pool;
-            }
-            catch (COMException comException)
-            {
-                _logger.LogError(File.ReadAllText(_apphostConfigPath));
-                throw comException;
-            }
+            _logger.LogInformation($"Configured AppPool {AppPoolName}");
+            return pool;
         }
 
         private void AddEnvironmentVariables(string contentRoot, ApplicationPool pool)
