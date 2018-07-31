@@ -22,19 +22,27 @@
     <PackageReference Include="Microsoft.Web.Administration" Version="$(MicrosoftWebAdministrationPackageVersion)" />
   </ItemGroup>
 
-  <Target Name="AddNativeComponents" BeforeTargets="AssignTargetPaths;GenerateNuspec" Condition="$(PackNativeAssets) == 'true'">
+  <Target Name="AddPackNativeComponents" BeforeTargets="_GetPackageFiles" Condition="$(PackNativeAssets) == 'true'">
     <ItemGroup>
-      <Content Include="%(ShimComponents.DllLocation)"
-               PackagePath="contentFiles\any\any\%(ShimComponents.Platform)\%(ShimComponents.PackageSubPath)"
-               CopyToOutputDirectory="PreserveNewest"
-               Visible="true"
-               Link="%(ShimComponents.Platform)\%(ShimComponents.PackageSubPath)%(ShimComponents.NativeAsset).dll" />
+      <None Include="%(ShimComponents.DllLocation)"
+            Pack="true"
+            PackagePath="content/any/any/%(ShimComponents.Platform)/%(ShimComponents.PackageSubPath)"/>
 
-      <Content Include="%(ShimComponents.PdbLocation)"
-               PackagePath="contentFiles\any\any\%(ShimComponents.Platform)\%(ShimComponents.PackageSubPath)"
-               CopyToOutputDirectory="PreserveNewest"
-               Visible="true"
-               Link="%(ShimComponents.Platform)\%(ShimComponents.PackageSubPath)%(ShimComponents.NativeAsset).pdb" />
+      <None Include="%(ShimComponents.PdbLocation)"
+            Pack="true"
+            PackagePath="content/any/any/%(ShimComponents.Platform)/%(ShimComponents.PackageSubPath)" />
+    </ItemGroup>
+  </Target>
+
+  <Target Name="AddRunNativeComponents" BeforeTargets="AssignTargetPaths" Condition="$(PackNativeAssets) == 'true'">
+    <ItemGroup>
+      <None Include="%(RunShimComponents.DllLocation)"
+             CopyToOutputDirectory="PreserveNewest"
+             Link="%(RunShimComponents.Platform)\%(RunShimComponents.PackageSubPath)%(RunShimComponents.NativeAsset).dll" />
+
+      <None Include="%(RunShimComponents.PdbLocation)"
+             CopyToOutputDirectory="PreserveNewest"
+             Link="%(RunShimComponents.Platform)\%(RunShimComponents.PackageSubPath)%(RunShimComponents.NativeAsset).pdb" />
     </ItemGroup>
   </Target>
 </Project>
