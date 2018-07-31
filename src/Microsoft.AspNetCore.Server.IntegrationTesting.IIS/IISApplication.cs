@@ -5,6 +5,7 @@ using System;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using System.Xml.Linq;
@@ -357,6 +358,7 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
 
         private string GetAncmLocation(string dllRoot)
         {
+            dllRoot = Environment.CurrentDirectory;
             var arch = _deploymentParameters.RuntimeArchitecture == RuntimeArchitecture.x64 ? $@"x64\{_ancmDllName}" : $@"x86\{_ancmDllName}";
             var ancmFile = Path.Combine(dllRoot, arch);
             if (!File.Exists(Environment.ExpandEnvironmentVariables(ancmFile)))

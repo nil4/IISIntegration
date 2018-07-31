@@ -6,6 +6,7 @@ using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Text.RegularExpressions;
 using System.Threading;
@@ -319,6 +320,7 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting.IIS
 
         private string ModifyANCMPathInConfig(string replaceFlag, string dllName, string serverConfig, string dllRoot)
         {
+            dllRoot = Environment.CurrentDirectory;
             if (serverConfig.Contains(replaceFlag))
             {
                 var arch = DeploymentParameters.RuntimeArchitecture == RuntimeArchitecture.x64 ? $@"x64\{dllName}" : $@"x86\{dllName}";

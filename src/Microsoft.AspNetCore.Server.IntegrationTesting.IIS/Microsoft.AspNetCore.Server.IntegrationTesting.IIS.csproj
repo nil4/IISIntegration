@@ -22,7 +22,7 @@
     <PackageReference Include="Microsoft.Web.Administration" Version="$(MicrosoftWebAdministrationPackageVersion)" />
   </ItemGroup>
 
-  <Target Name="AddNativeComponents" BeforeTargets="Build;GenerateNuspec" Condition="$(PackNativeAssets) == 'true'">
+  <Target Name="AddNativeComponents" BeforeTargets="AssignTargetPaths;GenerateNuspec" Condition="$(PackNativeAssets) == 'true'">
     <ItemGroup>
       <Content Include="%(ShimComponents.DllLocation)"
                PackagePath="contentFiles\any\any\%(ShimComponents.Platform)\%(ShimComponents.PackageSubPath)"
@@ -34,7 +34,7 @@
                PackagePath="contentFiles\any\any\%(ShimComponents.Platform)\%(ShimComponents.PackageSubPath)"
                CopyToOutputDirectory="PreserveNewest"
                Visible="true"
-               Link="%(ShimComponents.Platform)\%(ShimComponents.PackageSubPath)%(ShimComponents.NativeAsset).dll" />
+               Link="%(ShimComponents.Platform)\%(ShimComponents.PackageSubPath)%(ShimComponents.NativeAsset).pdb" />
     </ItemGroup>
   </Target>
 </Project>
