@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFrameworks>netcoreapp2.2</TargetFrameworks>
@@ -23,13 +23,6 @@
     <Compile Include="..\Common.FunctionalTests\**\*.cs" />
   </ItemGroup>
 
-  <ItemGroup Condition="'$(OS)' == 'Windows_NT'">
-    <None Include="$(MSBuildThisFileDirectory)..\..\src\AspNetCoreModuleV2\InProcessRequestHandler\bin\$(Configuration)\x64\aspnetcorev2_inprocess.dll" CopyToOutputDirectory="PreserveNewest" Visible="true" Link="%(FileName)%(Extension)" />
-    <None Include="$(MSBuildThisFileDirectory)..\..\src\AspNetCoreModuleV2\InProcessRequestHandler\bin\$(Configuration)\x64\aspnetcorev2_inprocess.pdb" CopyToOutputDirectory="PreserveNewest" Visible="true" Link="%(FileName)%(Extension)" />
-    <None Include="$(MSBuildThisFileDirectory)..\..\src\AspNetCoreModuleV2\AspNetCore\bin\$(Configuration)\x64\aspnetcorev2.dll" CopyToOutputDirectory="PreserveNewest" Visible="true" Link="%(FileName)%(Extension)" />
-    <None Include="$(MSBuildThisFileDirectory)..\..\src\AspNetCoreModuleV2\AspNetCore\bin\$(Configuration)\x64\aspnetcorev2.pdb" CopyToOutputDirectory="PreserveNewest" Visible="true" Link="%(FileName)%(Extension)" />
-  </ItemGroup>
-
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.Server.IntegrationTesting" Version="$(MicrosoftAspNetCoreServerIntegrationTestingPackageVersion)" />
     <PackageReference Include="Microsoft.AspNetCore.Hosting" Version="$(MicrosoftAspNetCoreHostingPackageVersion)" />
@@ -45,7 +38,7 @@
   <ItemGroup>
     <None Remove="AppHostConfig\HostableWebCore.config" />
   </ItemGroup>
-  
+
   <ItemGroup>
     <Content Update="AppHostConfig\HostableWebCore.config">
       <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>

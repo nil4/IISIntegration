@@ -7,7 +7,10 @@
     <NoWarn>$(NoWarn);CS1591</NoWarn>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageTags>aspnetcore;iis</PackageTags>
+    <PackNativeAssets Condition="'$(OS)' == 'Windows_NT'">true</PackNativeAssets>
   </PropertyGroup>
+
+  <Import Project="..\..\build\assets.props" />
 
   <ItemGroup>
     <EmbeddedResource Include="Http.config" />
@@ -19,4 +22,19 @@
     <PackageReference Include="Microsoft.Web.Administration" Version="$(MicrosoftWebAdministrationPackageVersion)" />
   </ItemGroup>
 
+  <Target Name="AddNativeComponents" BeforeTargets="Build;GenerateNuspec" Condition="$(PackNativeAssets) == 'true'">
+    <ItemGroup>
+      <Content Include="%(ShimComponents.DllLocation)"
+               PackagePath="contentFiles\any\any\%(ShimComponents.Platform)\%(ShimComponents.PackageSubPath)"
+               CopyToOutputDirectory="PreserveNewest"
+               Visible="true"
+               Link="%(ShimComponents.Platform)\%(ShimComponents.PackageSubPath)%(ShimComponents.NativeAsset).dll" />
+
+      <Content Include="%(ShimComponents.PdbLocation)"
+               PackagePath="contentFiles\any\any\%(ShimComponents.Platform)\%(ShimComponents.PackageSubPath)"
+               CopyToOutputDirectory="PreserveNewest"
+               Visible="true"
+               Link="%(ShimComponents.Platform)\%(ShimComponents.PackageSubPath)%(ShimComponents.NativeAsset).dll" />
+    </ItemGroup>
+  </Target>
 </Project>
