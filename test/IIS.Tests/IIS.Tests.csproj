@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFrameworks>netcoreapp2.2</TargetFrameworks>
@@ -25,7 +25,7 @@
 
   <ItemGroup>
     <None Include="AppHostConfig\HostableWebCore.config" CopyToOutputDirectory="PreserveNewest" Link="%(FileName)%(Extension)" />
-    <None Include="$(AspNetCoreModuleV2ShimDll)" CopyToOutputDirectory="PreserveNewest" Link="%(FileName)%(Extension)" />
+    <None Include="$(AspNetCoreModuleV2ShimDll)" Condition="$(PackNativeAssets) == 'true'" CopyToOutputDirectory="PreserveNewest" Link="%(FileName)%(Extension)" />
   </ItemGroup>
 
 </Project>

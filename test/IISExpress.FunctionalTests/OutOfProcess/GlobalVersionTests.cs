@@ -23,12 +23,11 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
             _fixture = fixture;
         }
 
-        private const string _aspNetCoreDll = "aspnetcorev2_outofprocess.dll";
         private const string _handlerVersion20 = "2.0.0";
         private const string _helloWorldRequest = "HelloWorld";
         private const string _helloWorldResponse = "Hello World";
 
-        [ConditionalFact(Skip = "TEMP")]
+        [ConditionalFact]
         public async Task GlobalVersion_DefaultWorks()
         {
             var deploymentParameters = GetGlobalVersionBaseDeploymentParameters();
@@ -52,7 +51,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
             Assert.Equal(_helloWorldResponse, responseText);
         }
 
-        [ConditionalTheory(Skip = "TEMP")]
+        [ConditionalTheory]
         [InlineData("2.1.0")]
         [InlineData("2.1.0-preview")]
         public async Task GlobalVersion_NewVersionNumber_Fails(string version)
@@ -66,12 +65,13 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
             Assert.False(response.IsSuccessStatusCode);
         }
 
-        [ConditionalTheory(Skip = "TEMP")]
+        [ConditionalTheory]
         [InlineData("2.1.0")]
         [InlineData("2.1.0-preview")]
         public async Task GlobalVersion_NewVersionNumber(string version)
         {
             var deploymentParameters = GetGlobalVersionBaseDeploymentParameters();
+            CopyShimToOutput(deploymentParameters);
             deploymentParameters.HandlerSettings["handlerVersion"] = version;
 
             var deploymentResult = await DeployAsync(deploymentParameters);
@@ -86,7 +86,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
             AssertLoadedVersion(version);
         }
 
-        [ConditionalTheory()]
+        [ConditionalTheory]
         [InlineData("2.1.0")]
         [InlineData("2.1.0-preview")]
         public async Task GlobalVersion_MultipleRequestHandlers_PicksHighestOne(string version)
@@ -109,12 +109,13 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
             AssertLoadedVersion(version);
         }
 
-        [ConditionalTheory(Skip = "TEMP")]
+        [ConditionalTheory]
         [InlineData("2.1.0")]
         [InlineData("2.1.0-preview")]
         public async Task GlobalVersion_MultipleRequestHandlers_UpgradeWorks(string version)
         {
             var deploymentParameters = GetGlobalVersionBaseDeploymentParameters();
+            CopyShimToOutput(deploymentParameters);
             var deploymentResult = await DeployAsync(deploymentParameters);
 
             var originalANCMPath = GetANCMRequestHandlerPath(deploymentResult, _handlerVersion20);
@@ -174,7 +175,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         private static void CopyShimToOutput(IISDeploymentParameters parameters)
         {
             parameters.AddServerConfigAction(
-                config => {
+                (config, contentRoot) => {
                     var moduleNodes = config.DescendantNodesAndSelf()
                         .OfType<XElement>()
                         .Where(element =>
@@ -182,9 +183,31 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
                             element.Attribute("name")?.Value.StartsWith("AspNetCoreModule") == true &&
                             element.Attribute("image") != null);
 
-                    var sourceDirectory = Path.GetDirectoryName(moduleNodes.First().Attribute("image").Value);
-
+                    var sourceDirectory = new DirectoryInfo(Path.GetDirectoryName(moduleNodes.First().Attribute("image").Value));
+                    var destinationDirectory = new DirectoryInfo(Path.Combine(contentRoot, sourceDirectory.Name));
+                    destinationDirectory.Create();
+                    foreach (var element in moduleNodes)
+                    {
+                        var imageAttribute = element.Attribute("image");
+                        imageAttribute.Value = imageAttribute.Value.Replace(sourceDirectory.FullName, destinationDirectory.FullName);
+                    }
+                    CopyFiles(sourceDirectory, destinationDirectory);
                 });
         }
+
+        private static void CopyFiles(DirectoryInfo source, DirectoryInfo target)
+        {
+            foreach (DirectoryInfo directoryInfo in source.GetDirectories())
+            {
+                CopyFiles(directoryInfo, target.CreateSubdirectory(directoryInfo.Name));
+            }
+
+            foreach (FileInfo fileInfo in source.GetFiles())
+            {
+                var destFileName = Path.Combine(target.FullName, fileInfo.Name);
+                fileInfo.CopyTo(destFileName);
+            }
+        }
+
     }
 }

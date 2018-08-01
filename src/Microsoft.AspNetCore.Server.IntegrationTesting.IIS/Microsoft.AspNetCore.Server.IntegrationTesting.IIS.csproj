@@ -7,7 +7,6 @@
     <NoWarn>$(NoWarn);CS1591</NoWarn>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageTags>aspnetcore;iis</PackageTags>
-    <PackNativeAssets Condition="'$(OS)' == 'Windows_NT'">true</PackNativeAssets>
   </PropertyGroup>
 
   <Import Project="..\..\build\assets.props" />
@@ -17,20 +16,25 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.AspNetCore.Server.IntegrationTesting" PrivateAssets="None" Version="$(MicrosoftAspNetCoreServerIntegrationTestingPackageVersion)" />
+    <PackageReference Include="Microsoft.AspNetCore.Server.IntegrationTesting" ExcludeAssets="contentfiles" PrivateAssets="None" Version="$(MicrosoftAspNetCoreServerIntegrationTestingPackageVersion)" />
     <PackageReference Include="Microsoft.NETCore.Windows.ApiSets" Version="$(MicrosoftNETCoreWindowsApiSetsPackageVersion)" />
     <PackageReference Include="Microsoft.Web.Administration" Version="$(MicrosoftWebAdministrationPackageVersion)" />
   </ItemGroup>
 
-  <Target Name="AddPackNativeComponents" BeforeTargets="_GetPackageFiles" Condition="$(PackNativeAssets) == 'true'">
+  <Target Name="AddPackNativeComponents" BeforeTargets="_GetPackageFiles;GetSignedPackageFiles" Condition="$(PackNativeAssets) == 'true'">
     <ItemGroup>
-      <None Include="%(ShimComponents.DllLocation)"
-            Pack="true"
-            PackagePath="content/any/any/%(ShimComponents.Platform)/%(ShimComponents.PackageSubPath)"/>
+      <Content Include="%(ShimComponents.DllLocation)"
+            PackageCopyToOutput="true"
+            PackagePath="contentFiles/any/any/%(ShimComponents.Platform)/%(ShimComponents.PackageSubPath)"/>
 
-      <None Include="%(ShimComponents.PdbLocation)"
-            Pack="true"
-            PackagePath="content/any/any/%(ShimComponents.Platform)/%(ShimComponents.PackageSubPath)" />
+      <Content Include="%(ShimComponents.PdbLocation)"
+            PackageCopyToOutput="true"
+            PackagePath="contentFiles/any/any/%(ShimComponents.Platform)/%(ShimComponents.PackageSubPath)" />
+
+      <SignedPackageFile Include="%(ShimComponents.NativeAsset)_%(ShimComponents.Platform)"
+                         PackagePath="contentFiles/any/any/%(ShimComponents.Platform)/%(ShimComponents.PackageSubPath)%(ShimComponents.NativeAsset).dll"
+                         Certificate="Microsoft" />
+
     </ItemGroup>
   </Target>
 

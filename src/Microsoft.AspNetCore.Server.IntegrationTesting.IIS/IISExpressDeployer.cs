@@ -291,7 +291,7 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting.IIS
                     value: DeploymentParameters.AncmVersion.ToString()));
                 ModifyDotNetExePathInWebConfig();
                 serverConfig = RemoveRedundantElements(serverConfig);
-                RunWebConfigActions();
+                RunWebConfigActions(contentRoot);
             }
             else
             {
@@ -299,7 +299,7 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting.IIS
                 serverConfig = ReplacePlaceholder(serverConfig, "[HostingModel]", DeploymentParameters.HostingModel.ToString());
                 serverConfig = ReplacePlaceholder(serverConfig, "[AspNetCoreModule]", DeploymentParameters.AncmVersion.ToString());
             }
-            serverConfig = RunServerConfigActions(serverConfig);
+            serverConfig = RunServerConfigActions(serverConfig, contentRoot);
 
             DeploymentParameters.ServerConfigLocation = Path.GetTempFileName();
             Logger.LogDebug("Saving Config to {configPath}", DeploymentParameters.ServerConfigLocation);
