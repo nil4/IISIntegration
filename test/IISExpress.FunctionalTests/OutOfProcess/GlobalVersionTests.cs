@@ -86,13 +86,13 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
             AssertLoadedVersion(version);
         }
 
-        [ConditionalTheory(Skip = "TEMP")]
+        [ConditionalTheory()]
         [InlineData("2.1.0")]
         [InlineData("2.1.0-preview")]
         public async Task GlobalVersion_MultipleRequestHandlers_PicksHighestOne(string version)
         {
             var deploymentParameters = GetGlobalVersionBaseDeploymentParameters();
-
+            CopyShimToOutput(deploymentParameters);
             var deploymentResult = await DeployAsync(deploymentParameters);
 
             var originalANCMPath = GetANCMRequestHandlerPath(deploymentResult, _handlerVersion20);
@@ -169,6 +169,22 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         private void AssertLoadedVersion(string version)
         {
             Assert.Contains(TestSink.Writes, context => context.Message.Contains(version + @"\aspnetcorev2_outofprocess.dll"));
+        }
+
+        private static void CopyShimToOutput(IISDeploymentParameters parameters)
+        {
+            parameters.AddServerConfigAction(
+                config => {
+                    var moduleNodes = config.DescendantNodesAndSelf()
+                        .OfType<XElement>()
+                        .Where(element =>
+                            element.Name == "add" &&
+                            element.Attribute("name")?.Value.StartsWith("AspNetCoreModule") == true &&
+                            element.Attribute("image") != null);
+
+                    var sourceDirectory = Path.GetDirectoryName(moduleNodes.First().Attribute("image").Value);
+
+                });
         }
     }
 }
