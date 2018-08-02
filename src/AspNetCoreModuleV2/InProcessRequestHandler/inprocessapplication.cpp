@@ -40,7 +40,7 @@ IN_PROCESS_APPLICATION::IN_PROCESS_APPLICATION(
         }
     }
 
-    m_status = APPLICATION_STATUS::STARTING;
+    m_status = MANAGED_APPLICATION_STATUS::STARTING;
 }
 
 IN_PROCESS_APPLICATION::~IN_PROCESS_APPLICATION()
@@ -63,21 +63,14 @@ IN_PROCESS_APPLICATION::DoShutDown(
 
 __override
 VOID
-IN_PROCESS_APPLICATION::Stop(bool fServerInitiated)
+IN_PROCESS_APPLICATION::StopInternal(bool fServerInitiated)
 {
     UNREFERENCED_PARAMETER(fServerInitiated);
     HRESULT hr = S_OK;
     CHandle  hThread;
     DWORD    dwThreadStatus = 0;
 
-    SRWExclusiveLock stopLock(m_stateLock);
-
-    if (m_fStopCalled)
-    {
-        return;
-    }
-
-    AppOfflineTrackingApplication::Stop(fServerInitiated);
+    AppOfflineTrackingApplication::StopInternal(fServerInitiated);
 
     DWORD    dwTimeout = m_pConfig->QueryShutdownTimeLimitInMS();
 
@@ -152,16 +145,16 @@ IN_PROCESS_APPLICATION::ShutDownInternal()
     }
 
     if (m_fShutdownCalledFromNative ||
-        m_status == APPLICATION_STATUS::STARTING ||
-        m_status == APPLICATION_STATUS::FAIL)
+        m_status == MANAGED_APPLICATION_STATUS::STARTING ||
+        m_status == MANAGED_APPLICATION_STATUS::FAIL)
     {
         return;
     }
 
     {
         if (m_fShutdownCalledFromNative ||
-            m_status == APPLICATION_STATUS::STARTING ||
-            m_status == APPLICATION_STATUS::FAIL)
+            m_status == MANAGED_APPLICATION_STATUS::STARTING ||
+            m_status == MANAGED_APPLICATION_STATUS::FAIL)
         {
             return;
         }
@@ -171,7 +164,7 @@ IN_PROCESS_APPLICATION::ShutDownInternal()
         // managed. We still need to wait on main exiting no matter what. m_fShutdownCalledFromNative
         // is used for detecting redundant calls and blocking more requests to OnExecuteRequestHandler.
         m_fShutdownCalledFromNative = TRUE;
-        m_status = APPLICATION_STATUS::RECYCLED;
+        m_status = MANAGED_APPLICATION_STATUS::SHUTDOWN;
 
         if (!m_fShutdownCalledFromManaged)
         {
@@ -249,18 +242,18 @@ IN_PROCESS_APPLICATION::LoadManagedApplication
     HRESULT    hr = S_OK;
     DWORD      dwTimeout;
     DWORD      dwResult;
-    
+
     ReferenceApplication();
 
-    if (m_status != APPLICATION_STATUS::STARTING)
+    if (m_status != MANAGED_APPLICATION_STATUS::STARTING)
     {
         // Core CLR has already been loaded.
         // Cannot load more than once even there was a failure
-        if (m_status == APPLICATION_STATUS::FAIL)
+        if (m_status == MANAGED_APPLICATION_STATUS::FAIL)
         {
             hr = E_APPLICATION_ACTIVATION_EXEC_FAILURE;
         }
-        else if (m_status == APPLICATION_STATUS::SHUTDOWN)
+        else if (m_status == MANAGED_APPLICATION_STATUS::SHUTDOWN)
         {
             hr = HRESULT_FROM_WIN32(ERROR_SHUTDOWN_IS_SCHEDULED);
         }
@@ -289,13 +282,13 @@ IN_PROCESS_APPLICATION::LoadManagedApplication
             LOG_IF_FAILED(m_pLoggerProvider->Start());
         }
 
-        if (m_status != APPLICATION_STATUS::STARTING)
+        if (m_status != MANAGED_APPLICATION_STATUS::STARTING)
         {
-            if (m_status == APPLICATION_STATUS::FAIL)
+            if (m_status == MANAGED_APPLICATION_STATUS::FAIL)
             {
                 hr = E_APPLICATION_ACTIVATION_EXEC_FAILURE;
             }
-            else if (m_status == APPLICATION_STATUS::SHUTDOWN)
+            else if (m_status == MANAGED_APPLICATION_STATUS::SHUTDOWN)
             {
                 hr = HRESULT_FROM_WIN32(ERROR_SHUTDOWN_IS_SCHEDULED);
             }
@@ -363,13 +356,13 @@ IN_PROCESS_APPLICATION::LoadManagedApplication
             goto Finished;
         }
 
-        m_status = APPLICATION_STATUS::RUNNING;
+        m_status = MANAGED_APPLICATION_STATUS::RUNNING_MANAGED;
     }
 Finished:
 
     if (FAILED(hr))
     {
-        m_status = APPLICATION_STATUS::FAIL;
+        m_status = MANAGED_APPLICATION_STATUS::FAIL;
 
         UTILITY::LogEventF(g_hEventLog,
             EVENTLOG_ERROR_TYPE,
@@ -444,7 +437,7 @@ IN_PROCESS_APPLICATION::ExecuteApplication(
     hostfxr_main_fn     pProc;
     std::unique_ptr<HOSTFXR_OPTIONS>    hostFxrOptions = NULL;
 
-    DBG_ASSERT(m_status == APPLICATION_STATUS::STARTING);
+    DBG_ASSERT(m_status == MANAGED_APPLICATION_STATUS::STARTING);
 
     pProc = s_fMainCallback;
     if (pProc == nullptr)
@@ -502,7 +495,7 @@ Finished:
     // Don't bother locking here as there will always be a race between receiving a native shutdown
     // notification and unexpected managed exit.
     //
-    m_status = APPLICATION_STATUS::SHUTDOWN;
+    m_status = MANAGED_APPLICATION_STATUS::SHUTDOWN;
     m_fShutdownCalledFromManaged = TRUE;
     FreeLibrary(hModule);
     m_pLoggerProvider->Stop();
@@ -575,12 +568,12 @@ IN_PROCESS_APPLICATION::RunDotnetApplication(DWORD argc, CONST PCWSTR* argv, hos
         {
             hr = HRESULT_FROM_WIN32(GetLastError());
         }
-        
+
         LOG_INFOF("Managed application exited with code %d", m_ProcessExitCode);
     }
     __except(GetExceptionCode() != 0)
     {
-        
+
         LOG_INFOF("Managed threw an exception %d", GetExceptionCode());
         hr = HRESULT_FROM_WIN32(GetLastError());
     }

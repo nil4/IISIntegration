@@ -9,7 +9,12 @@
 
 APPLICATION_STATUS PollingAppOfflineApplication::QueryStatus()
 {
-    return (AppOfflineExists() == (m_mode == StopWhenRemoved)) ? APPLICATION_STATUS::RUNNING : APPLICATION_STATUS::RECYCLED;
+    if ((AppOfflineExists() != (m_mode == StopWhenRemoved)))
+    {
+        Stop(/* fServerInitiated */ false);
+    }
+
+    return APPLICATION::QueryStatus();
 }
 
 bool
@@ -29,7 +34,7 @@ PollingAppOfflineApplication::AppOfflineExists()
             m_fAppOfflineFound = is_regular_file(m_appOfflineLocation);
             if(m_fAppOfflineFound)
             {
-                LOG_IF_FAILED(OnAppOfflineFound());    
+                LOG_IF_FAILED(OnAppOfflineFound());
             }
             m_ulLastCheckTime = ulCurrentTime;
         }

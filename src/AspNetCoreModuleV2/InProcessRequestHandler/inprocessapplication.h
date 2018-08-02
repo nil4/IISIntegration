@@ -12,6 +12,15 @@ typedef REQUEST_NOTIFICATION_STATUS(WINAPI * PFN_REQUEST_HANDLER) (IN_PROCESS_HA
 typedef BOOL(WINAPI * PFN_SHUTDOWN_HANDLER) (void* pvShutdownHandlerContext);
 typedef REQUEST_NOTIFICATION_STATUS(WINAPI * PFN_ASYNC_COMPLETION_HANDLER)(void *pvManagedHttpContext, HRESULT hrCompletionStatus, DWORD cbCompletion);
 
+enum MANAGED_APPLICATION_STATUS
+{
+    UNKNOWN = 0,
+    STARTING,
+    RUNNING_MANAGED,
+    SHUTDOWN,
+    FAIL
+};
+
 class IN_PROCESS_APPLICATION : public InProcessApplicationBase
 {
 public:
@@ -26,7 +35,7 @@ public:
 
     __override
     VOID
-    Stop(bool fServerInitiated) override;
+    StopInternal(bool fServerInitiated) override;
 
     VOID
     SetCallbackHandles(
@@ -138,6 +147,7 @@ private:
     volatile BOOL                   m_fShutdownCalledFromNative;
     volatile BOOL                   m_fShutdownCalledFromManaged;
     BOOL                            m_fInitialized;
+    MANAGED_APPLICATION_STATUS      m_status;
     std::unique_ptr<REQUESTHANDLER_CONFIG> m_pConfig;
 
     static IN_PROCESS_APPLICATION*  s_Application;
