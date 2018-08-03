@@ -9,16 +9,12 @@
 
 APPLICATION_STATUS PollingAppOfflineApplication::QueryStatus()
 {
-    if ((AppOfflineExists() != (m_mode == StopWhenRemoved)))
-    {
-        Stop(/* fServerInitiated */ false);
-    }
-
+    CheckAppOffline();
     return APPLICATION::QueryStatus();
 }
 
-bool
-PollingAppOfflineApplication::AppOfflineExists()
+void
+PollingAppOfflineApplication::CheckAppOffline()
 {
     const auto ulCurrentTime = GetTickCount64();
     //
@@ -39,7 +35,11 @@ PollingAppOfflineApplication::AppOfflineExists()
             m_ulLastCheckTime = ulCurrentTime;
         }
     }
-    return m_fAppOfflineFound;
+
+    if (m_fAppOfflineFound != (m_mode == StopWhenRemoved))
+    {
+        Stop(/* fServerInitiated */ false);
+    }
 }
 
 

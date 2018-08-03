@@ -80,8 +80,6 @@ APPLICATION_INFO::GetOrCreateApplication(
     {
         LOG_INFO("Detected app_offline file, creating polling application");
         m_pApplication.reset(new AppOfflineApplication(httpApplication));
-        // Force status update
-        m_pApplication->QueryStatus();
     }
     else
     {

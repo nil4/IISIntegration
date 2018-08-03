@@ -25,7 +25,7 @@ public:
     }
 
     APPLICATION_STATUS QueryStatus() override;
-    bool AppOfflineExists();
+    void CheckAppOffline();
     virtual HRESULT OnAppOfflineFound() = 0;
     void StopInternal(bool fServerInitiated) override { UNREFERENCED_PARAMETER(fServerInitiated); }
 

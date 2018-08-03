@@ -23,7 +23,6 @@ IN_PROCESS_APPLICATION::IN_PROCESS_APPLICATION(
     APPLICATION_PARAMETER *pParameters,
     DWORD                  nParameters) :
     InProcessApplicationBase(pHttpServer, pApplication),
-    m_pHttpServer(pHttpServer),
     m_ProcessExitCode(0),
     m_fBlockCallbacksIntoManaged(FALSE),
     m_fShutdownCalledFromNative(FALSE),

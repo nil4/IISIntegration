@@ -12,15 +12,6 @@ typedef REQUEST_NOTIFICATION_STATUS(WINAPI * PFN_REQUEST_HANDLER) (IN_PROCESS_HA
 typedef BOOL(WINAPI * PFN_SHUTDOWN_HANDLER) (void* pvShutdownHandlerContext);
 typedef REQUEST_NOTIFICATION_STATUS(WINAPI * PFN_ASYNC_COMPLETION_HANDLER)(void *pvManagedHttpContext, HRESULT hrCompletionStatus, DWORD cbCompletion);
 
-enum MANAGED_APPLICATION_STATUS
-{
-    UNKNOWN = 0,
-    STARTING,
-    RUNNING_MANAGED,
-    SHUTDOWN,
-    FAIL
-};
-
 class IN_PROCESS_APPLICATION : public InProcessApplicationBase
 {
 public:
@@ -120,7 +111,14 @@ public:
 
 private:
 
-    IHttpServer &                   m_pHttpServer;
+    enum MANAGED_APPLICATION_STATUS
+    {
+        UNKNOWN = 0,
+        STARTING,
+        RUNNING_MANAGED,
+        SHUTDOWN,
+        FAIL
+    };
 
     // Thread executing the .NET Core process
     HANDLE                          m_hThread;
