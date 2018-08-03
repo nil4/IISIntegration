@@ -88,7 +88,8 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         public async Task StartupMessagesAreLoggedIntoDebugLogFile()
         {
             var deploymentParameters = _fixture.GetBaseDeploymentParameters(publish: true);
-            deploymentParameters.AddDebugLogToWebConfig("debug.txt");
+            deploymentParameters.HandlerSettings["debugLevel"] = "file";
+            deploymentParameters.HandlerSettings["debugFile"] = "debug.txt";
 
             var deploymentResult = await DeployAsync(deploymentParameters);
 
@@ -101,8 +102,23 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         public async Task StartupMessagesAreLoggedIntoDefaultDebugLogFile()
         {
             var deploymentParameters = _fixture.GetBaseDeploymentParameters(publish: true);
-            deploymentParameters.HandlerSettings["debugLevel"] = "4";
+            deploymentParameters.HandlerSettings["debugLevel"] = "file";
 
+            var deploymentResult = await DeployAsync(deploymentParameters);
+
+            await deploymentResult.RetryingHttpClient.GetAsync("/");
+
+            AssertLogs(Path.Combine(deploymentResult.ContentRoot, "aspnetcore-debug.log"));
+        }
+
+        [ConditionalFact]
+        [RequiresIIS(IISCapability.PoolEnvironmentVariables)]
+        public async Task StartupMessagesAreLoggedIntoDefaultDebugLogFileWhenEnabledWithEnvVar()
+        {
+            var deploymentParameters = _fixture.GetBaseDeploymentParameters(publish: true);
+            deploymentParameters.EnvironmentVariables["ASPNETCORE_MODULE_DEBUG"] = "file";
+            // Add empty debugFile handler setting to prevent IIS deployer from overriding debug settings
+            deploymentParameters.HandlerSettings["debugFile"] = "";
             var deploymentResult = await DeployAsync(deploymentParameters);
 
             await deploymentResult.RetryingHttpClient.GetAsync("/");
@@ -176,9 +192,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
                 var logContents = File.ReadAllText(firstTempFile);
                 Assert.Contains("Switching debug log files to", logContents);
 
-                var secondLogContents = File.ReadAllText(secondTempFile);
-                Assert.Contains("[aspnetcorev2.dll]", logContents);
-                Assert.Contains("[aspnetcorev2_inprocess.dll]", logContents);
+                AssertLogs(secondTempFile);
             }
             finally
             {

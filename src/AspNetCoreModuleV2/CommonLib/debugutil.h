@@ -12,7 +12,7 @@
 #define ASPNETCORE_DEBUG_FLAG_WARNING       DEBUG_FLAG_WARN
 #define ASPNETCORE_DEBUG_FLAG_ERROR         DEBUG_FLAG_ERROR
 #define ASPNETCORE_DEBUG_FLAG_CONSOLE       0x00000008
-#define ASPNETCORE_DEBUG_FLAG_FILE          0x00000008
+#define ASPNETCORE_DEBUG_FLAG_FILE          0x00000010
 
 #define LOG_INFO(...) DebugPrint(ASPNETCORE_DEBUG_FLAG_INFO, __VA_ARGS__)
 #define LOG_INFOF(...) DebugPrintf(ASPNETCORE_DEBUG_FLAG_INFO, __VA_ARGS__)
@@ -26,13 +26,8 @@
 VOID
 DebugInitialize(HMODULE hModule);
 
-VOID
-CreateDebugLogFile(const std::wstring &debugOutputFile);
-
 HRESULT
 DebugInitializeFromConfig(IHttpServer& pHttpServer, IHttpApplication& pHttpApplication);
-
-void SetDebugFlags(const std::wstring &value);
 
 VOID
 DebugStop();

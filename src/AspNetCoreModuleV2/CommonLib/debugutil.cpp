@@ -19,13 +19,12 @@ inline HANDLE g_logFile = INVALID_HANDLE_VALUE;
 inline HMODULE g_hModule;
 inline SRWLOCK g_logFileLock;
 
-
 HRESULT
 PrintDebugHeader()
 {
     DWORD  verHandle = 0;
     UINT   size      = 0;
-    LPBYTE lpBuffer  = NULL;
+    LPVOID lpBuffer  = NULL;
 
     WCHAR path[MAX_PATH];
     RETURN_LAST_ERROR_IF(!GetModuleFileName(g_hModule, path, sizeof(path)));
@@ -36,7 +35,7 @@ PrintDebugHeader()
     std::vector<BYTE> verData(verSize);
 
     RETURN_LAST_ERROR_IF(!GetFileVersionInfo(path, verHandle, verSize, verData.data()));
-    RETURN_LAST_ERROR_IF(!VerQueryValue(verData.data(), L"\\",(VOID FAR* FAR*)&lpBuffer,&size));
+    RETURN_LAST_ERROR_IF(!VerQueryValue(verData.data(), L"\\", &lpBuffer, &size));
 
     auto verInfo = reinterpret_cast<VS_FIXEDFILEINFO *>(lpBuffer);
     if (verInfo->dwSignature == 0xfeef04bd)
@@ -56,6 +55,90 @@ PrintDebugHeader()
     }
 
     return S_OK;
+}
+
+void SetDebugFlags(const std::wstring &debugValue)
+{
+    try
+    {
+        if (!debugValue.empty())
+        {
+            const auto value = std::stoi(debugValue);
+
+            if (value >= 1) DEBUG_FLAGS_VAR |= ASPNETCORE_DEBUG_FLAG_ERROR;
+            if (value >= 2) DEBUG_FLAGS_VAR |= ASPNETCORE_DEBUG_FLAG_WARNING;
+            if (value >= 3) DEBUG_FLAGS_VAR |= ASPNETCORE_DEBUG_FLAG_INFO;
+            if (value >= 4) DEBUG_FLAGS_VAR |= ASPNETCORE_DEBUG_FLAG_CONSOLE;
+            if (value >= 5) DEBUG_FLAGS_VAR |= ASPNETCORE_DEBUG_FLAG_FILE;
+
+            return;
+        }
+    }
+    catch (...)
+    {
+        // ignore
+    }
+
+    try
+    {
+        std::wstringstream stringStream(debugValue);
+        std::wstring flag;
+
+        while (std::getline(stringStream, flag, L','))
+        {
+            if (flag == L"error") DEBUG_FLAGS_VAR |= DEBUG_FLAGS_ERROR;
+            if (flag == L"warning") DEBUG_FLAGS_VAR |= DEBUG_FLAGS_WARN;
+            if (flag == L"info") DEBUG_FLAGS_VAR |= DEBUG_FLAGS_INFO;
+            if (flag == L"console") DEBUG_FLAGS_VAR |= ASPNETCORE_DEBUG_FLAG_CONSOLE;
+            if (flag == L"file") DEBUG_FLAGS_VAR |= ASPNETCORE_DEBUG_FLAG_FILE;
+        }
+
+        // If file or console is enabled but level is not set, enable all levels
+        if (DEBUG_FLAGS_VAR != 0 && (DEBUG_FLAGS_VAR & DEBUG_FLAGS_ANY) == 0)
+        {
+            DEBUG_FLAGS_VAR |= DEBUG_FLAGS_ANY;
+        }
+    }
+    catch (...)
+    {
+        // ignore
+    }
+}
+
+bool CreateDebugLogFile(const std::wstring &debugOutputFile)
+{
+    try
+    {
+        if (!debugOutputFile.empty())
+        {
+            if (g_logFile != INVALID_HANDLE_VALUE)
+            {
+                LOG_INFOF("Switching debug log files to %S", debugOutputFile.c_str());
+            }
+
+            SRWExclusiveLock lock(g_logFileLock);
+            if (g_logFile != INVALID_HANDLE_VALUE)
+            {
+                CloseHandle(g_logFile);
+                g_logFile = INVALID_HANDLE_VALUE;
+            }
+            g_logFile = CreateFileW(debugOutputFile.c_str(),
+                (GENERIC_READ | GENERIC_WRITE),
+                (FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE),
+                nullptr,
+                OPEN_ALWAYS,
+                FILE_ATTRIBUTE_NORMAL,
+                nullptr
+            );
+            return true;
+        }
+    }
+    catch (...)
+    {
+        // ignore
+    }
+
+    return false;
 }
 
 VOID
@@ -112,10 +195,10 @@ DebugInitialize(HMODULE hModule)
         // ignore
     }
 
-    if (IsDebuggerPresent())
+    /*if (IsDebuggerPresent())
     {
         DEBUG_FLAGS_VAR |= DEBUG_FLAGS_INFO;
-    }
+    }*/
 
     PrintDebugHeader();
 }
@@ -142,79 +225,26 @@ DebugInitializeFromConfig(IHttpServer& pHttpServer, IHttpApplication& pHttpAppli
 
     SetDebugFlags(debugValue.QueryStr());
 
-    if (debugFile.QueryCCH() == 0)
+    if (debugFile.QueryCCH() == 0 && IsEnabled(ASPNETCORE_DEBUG_FLAG_FILE))
     {
         debugFile.Append(L".\\aspnetcore-debug.log");
     }
 
-    std::filesystem::path filePath = std::filesystem::path (debugFile.QueryStr());
-    if (filePath.is_relative())
+    std::filesystem::path filePath = std::filesystem::path(debugFile.QueryStr());
+    if (!filePath.string().empty() && filePath.is_relative())
     {
         filePath = std::filesystem::path(pHttpApplication.GetApplicationPhysicalPath()) / filePath;
     }
 
-    CreateDebugLogFile(filePath);
+    const auto reopenedFile = CreateDebugLogFile(filePath);
 
     // Print header if flags changed
-    if (oldFlags != DEBUG_FLAGS_VAR)
+    if (oldFlags != DEBUG_FLAGS_VAR || reopenedFile)
     {
         PrintDebugHeader();
     }
 
     return S_OK;
-}
-
-void SetDebugFlags(const std::wstring &debugValue)
-{
-    try
-    {
-        if (!debugValue.empty())
-        {
-            const auto value = std::stoi(debugValue.c_str());
-
-            if (value >= 1) DEBUG_FLAGS_VAR |= ASPNETCORE_DEBUG_FLAG_ERROR;
-            if (value >= 2) DEBUG_FLAGS_VAR |= ASPNETCORE_DEBUG_FLAG_WARNING;
-            if (value >= 3) DEBUG_FLAGS_VAR |= ASPNETCORE_DEBUG_FLAG_INFO;
-            if (value >= 4) DEBUG_FLAGS_VAR |= ASPNETCORE_DEBUG_FLAG_CONSOLE;
-        }
-    }
-    catch (...)
-    {
-        // ignore
-    }
-}
-
-void CreateDebugLogFile(const std::wstring &debugOutputFile)
-{
-    try
-    {
-        if (!debugOutputFile.empty())
-        {
-            if (g_logFile != INVALID_HANDLE_VALUE)
-            {
-                LOG_INFOF("Switching debug log files to %S", debugOutputFile.c_str());
-                CloseHandle(g_logFile);
-                DEBUG_FLAGS_VAR &= ~ASPNETCORE_DEBUG_FLAG_FILE;
-
-            }
-            g_logFile = CreateFileW(debugOutputFile.c_str(),
-                (GENERIC_READ | GENERIC_WRITE),
-                (FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE),
-                nullptr,
-                OPEN_ALWAYS,
-                FILE_ATTRIBUTE_NORMAL,
-                nullptr
-            );
-            if (g_logFile != INVALID_HANDLE_VALUE)
-            {
-                DEBUG_FLAGS_VAR |= ASPNETCORE_DEBUG_FLAG_FILE;
-            }
-        }
-    }
-    catch (...)
-    {
-        // ignore
-    }
 }
 
 VOID
@@ -262,7 +292,7 @@ DebugPrint(
             WriteFile(g_hStandardOutput, strOutput.QueryStr(), strOutput.QueryCB(), &nBytesWritten, nullptr);
         }
 
-        if (IsEnabled(ASPNETCORE_DEBUG_FLAG_FILE))
+        if (g_logFile != INVALID_HANDLE_VALUE)
         {
             SRWExclusiveLock lock(g_logFileLock);
 
