@@ -54,7 +54,7 @@ APPLICATION_INFO::GetOrCreateApplication(
 )
 {
     HRESULT             hr = S_OK;
-    
+
     SRWExclusiveLock lock(m_applicationLock);
 
     auto& httpApplication = *pHttpContext->GetApplication();
@@ -72,7 +72,7 @@ APPLICATION_INFO::GetOrCreateApplication(
         else
         {
             // another thread created the application
-            FINISHED(S_OK);   
+            FINISHED(S_OK);
         }
     }
 
@@ -80,6 +80,8 @@ APPLICATION_INFO::GetOrCreateApplication(
     {
         LOG_INFO("Detected app_offline file, creating polling application");
         m_pApplication.reset(new AppOfflineApplication(httpApplication));
+        // Force status update
+        m_pApplication->QueryStatus();
     }
     else
     {
@@ -124,7 +126,7 @@ Finished:
 
     if (m_pApplication)
     {
-        pApplication = ReferenceApplication(m_pApplication.get());   
+        pApplication = ReferenceApplication(m_pApplication.get());
     }
 
     return hr;
@@ -410,7 +412,7 @@ APPLICATION_INFO::RecycleApplication()
 }
 
 
-DWORD WINAPI 
+DWORD WINAPI
 APPLICATION_INFO::DoRecycleApplication(
     LPVOID lpParam)
 {

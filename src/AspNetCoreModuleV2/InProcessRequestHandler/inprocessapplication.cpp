@@ -70,8 +70,6 @@ IN_PROCESS_APPLICATION::StopInternal(bool fServerInitiated)
     CHandle  hThread;
     DWORD    dwThreadStatus = 0;
 
-    AppOfflineTrackingApplication::StopInternal(fServerInitiated);
-
     DWORD    dwTimeout = m_pConfig->QueryShutdownTimeLimitInMS();
 
     if (IsDebuggerPresent())
@@ -130,7 +128,7 @@ Finished:
             m_pConfig->QueryConfigPath()->QueryStr());
     }
 
-    InProcessApplicationBase::Stop(fServerInitiated);
+    InProcessApplicationBase::StopInternal(fServerInitiated);
 }
 
 VOID

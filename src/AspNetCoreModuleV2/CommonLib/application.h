@@ -73,7 +73,7 @@ public:
 
 protected:
     SRWLOCK m_stateLock;
-    bool m_fStopCalled;
+    bool m_fStopCalled; 
 
 private:
     mutable LONG           m_cRefs;

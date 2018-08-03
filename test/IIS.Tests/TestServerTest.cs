@@ -15,7 +15,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
     {
         [ConditionalFact]
         public async Task SingleProcessTestServer_HelloWorld()
-        { while (true) {
+        {
             var helloWorld = "Hello World";
             var expectedPath = "/Path";
 
@@ -31,5 +31,5 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
                     Assert.Equal(expectedPath, path);
                 }
             }
-        }}
+        }
 }
