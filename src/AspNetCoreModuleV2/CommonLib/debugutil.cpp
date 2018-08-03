@@ -16,11 +16,52 @@
 
 inline HANDLE g_hStandardOutput = INVALID_HANDLE_VALUE;
 inline HANDLE g_logFile = INVALID_HANDLE_VALUE;
+inline HMODULE g_hModule;
 inline SRWLOCK g_logFileLock;
 
-VOID
-DebugInitialize()
+
+HRESULT
+PrintDebugHeader()
 {
+    DWORD  verHandle = 0;
+    UINT   size      = 0;
+    LPBYTE lpBuffer  = NULL;
+
+    WCHAR path[MAX_PATH];
+    RETURN_LAST_ERROR_IF(!GetModuleFileName(g_hModule, path, sizeof(path)));
+
+    DWORD verSize = GetFileVersionInfoSize(path, &verHandle);
+    RETURN_LAST_ERROR_IF(verSize == 0);
+
+    std::vector<BYTE> verData(verSize);
+
+    RETURN_LAST_ERROR_IF(!GetFileVersionInfo(path, verHandle, verSize, verData.data()));
+    RETURN_LAST_ERROR_IF(!VerQueryValue(verData.data(), L"\\",(VOID FAR* FAR*)&lpBuffer,&size));
+
+    auto verInfo = reinterpret_cast<VS_FIXEDFILEINFO *>(lpBuffer);
+    if (verInfo->dwSignature == 0xfeef04bd)
+    {
+        LPVOID pvProductName = NULL;
+        unsigned int iProductNameLen = 0;
+        RETURN_LAST_ERROR_IF(!VerQueryValue(verData.data(), _T("\\StringFileInfo\\040904b0\\FileDescription"), &pvProductName, &iProductNameLen));
+
+        DebugPrintf(ASPNETCORE_DEBUG_FLAG_INFO, "Initializing logs for %S. File Version: %d.%d.%d.%d. Description: %S",
+            path,
+            ( verInfo->dwFileVersionMS >> 16 ) & 0xffff,
+            ( verInfo->dwFileVersionMS >>  0 ) & 0xffff,
+            ( verInfo->dwFileVersionLS >> 16 ) & 0xffff,
+            ( verInfo->dwFileVersionLS >>  0 ) & 0xffff,
+            pvProductName
+        );
+    }
+
+    return S_OK;
+}
+
+VOID
+DebugInitialize(HMODULE hModule)
+{
+    g_hModule = hModule;
     g_hStandardOutput = GetStdHandle(STD_OUTPUT_HANDLE);
 
     HKEY hKey;
@@ -75,11 +116,15 @@ DebugInitialize()
     {
         DEBUG_FLAGS_VAR |= DEBUG_FLAGS_INFO;
     }
+
+    PrintDebugHeader();
 }
 
 HRESULT
 DebugInitializeFromConfig(IHttpServer& pHttpServer, IHttpApplication& pHttpApplication)
 {
+    auto oldFlags = DEBUG_FLAGS_VAR;
+
     CComPtr<IAppHostElement>        pAspNetCoreElement;
 
     const CComBSTR bstrAspNetCoreSection = L"system.webServer/aspNetCore";
@@ -97,7 +142,24 @@ DebugInitializeFromConfig(IHttpServer& pHttpServer, IHttpApplication& pHttpAppli
 
     SetDebugFlags(debugValue.QueryStr());
 
-    CreateDebugLogFile(debugFile.QueryStr());
+    if (debugFile.QueryCCH() == 0)
+    {
+        debugFile.Append(L".\\aspnetcore-debug.log");
+    }
+
+    std::filesystem::path filePath = std::filesystem::path (debugFile.QueryStr());
+    if (filePath.is_relative())
+    {
+        filePath = std::filesystem::path(pHttpApplication.GetApplicationPhysicalPath()) / filePath;
+    }
+
+    CreateDebugLogFile(filePath);
+
+    // Print header if flags changed
+    if (oldFlags != DEBUG_FLAGS_VAR)
+    {
+        PrintDebugHeader();
+    }
 
     return S_OK;
 }
@@ -130,7 +192,7 @@ void CreateDebugLogFile(const std::wstring &debugOutputFile)
         {
             if (g_logFile != INVALID_HANDLE_VALUE)
             {
-                WLOG_INFOF(L"Switching debug log files to %s", debugOutputFile.c_str());
+                LOG_INFOF("Switching debug log files to %S", debugOutputFile.c_str());
                 CloseHandle(g_logFile);
                 DEBUG_FLAGS_VAR &= ~ASPNETCORE_DEBUG_FLAG_FILE;
 
@@ -237,40 +299,5 @@ DebugPrintf(
         }
 
         DebugPrint( dwFlag, strCooked.QueryStr() );
-    }
-}
-
-VOID
-WDebugPrintf(
-    DWORD   dwFlag,
-    LPCWSTR   szFormat,
-    ...
-    )
-{
-    va_list  args;
-    HRESULT hr = S_OK;
-
-    if ( IsEnabled( dwFlag ) )
-    {
-        STACK_STRU (formatted,256);
-
-        va_start( args, szFormat );
-
-        hr = formatted.SafeVsnwprintf(szFormat, args );
-
-        va_end( args );
-
-        if (FAILED (hr))
-        {
-            return;
-        }
-
-        STACK_STRA (converted, 256);
-        if (FAILED ( converted.CopyW(formatted.QueryStr(), formatted.QueryCCH()) ))
-        {
-            return;
-        }
-
-        DebugPrint( dwFlag, converted.QueryStr() );
     }
 }
