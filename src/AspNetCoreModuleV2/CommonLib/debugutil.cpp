@@ -32,18 +32,21 @@ PrintDebugHeader()
     DWORD verSize = GetFileVersionInfoSize(path, &verHandle);
     RETURN_LAST_ERROR_IF(verSize == 0);
 
+    // Allocate memory to hold data structure returned by GetFileVersionInfo
     std::vector<BYTE> verData(verSize);
 
     RETURN_LAST_ERROR_IF(!GetFileVersionInfo(path, verHandle, verSize, verData.data()));
     RETURN_LAST_ERROR_IF(!VerQueryValue(verData.data(), L"\\", &lpBuffer, &size));
 
     auto verInfo = reinterpret_cast<VS_FIXEDFILEINFO *>(lpBuffer);
-    if (verInfo->dwSignature == 0xfeef04bd)
+    // Check result signature
+    if (verInfo->dwSignature == VS_FFI_SIGNATURE)
     {
         LPVOID pvProductName = NULL;
         unsigned int iProductNameLen = 0;
         RETURN_LAST_ERROR_IF(!VerQueryValue(verData.data(), _T("\\StringFileInfo\\040904b0\\FileDescription"), &pvProductName, &iProductNameLen));
 
+        // Major, minor are stored in dwFileVersionMS field and patch, build in dwFileVersionLS field as pair of 32 bit numbers
         DebugPrintf(ASPNETCORE_DEBUG_FLAG_INFO, "Initializing logs for %S. File Version: %d.%d.%d.%d. Description: %S",
             path,
             ( verInfo->dwFileVersionMS >> 16 ) & 0xffff,
@@ -86,11 +89,11 @@ void SetDebugFlags(const std::wstring &debugValue)
 
         while (std::getline(stringStream, flag, L','))
         {
-            if (flag == L"error") DEBUG_FLAGS_VAR |= DEBUG_FLAGS_ERROR;
-            if (flag == L"warning") DEBUG_FLAGS_VAR |= DEBUG_FLAGS_WARN;
-            if (flag == L"info") DEBUG_FLAGS_VAR |= DEBUG_FLAGS_INFO;
-            if (flag == L"console") DEBUG_FLAGS_VAR |= ASPNETCORE_DEBUG_FLAG_CONSOLE;
-            if (flag == L"file") DEBUG_FLAGS_VAR |= ASPNETCORE_DEBUG_FLAG_FILE;
+            if (_wcsnicmp(flag.c_str(), L"error", wcslen(L"error")) == 0) DEBUG_FLAGS_VAR |= DEBUG_FLAGS_ERROR;
+            if (_wcsnicmp(flag.c_str(), L"warning", wcslen(L"warning")) == 0) DEBUG_FLAGS_VAR |= DEBUG_FLAGS_WARN;
+            if (_wcsnicmp(flag.c_str(), L"info", wcslen(L"info")) == 0) DEBUG_FLAGS_VAR |= DEBUG_FLAGS_INFO;
+            if (_wcsnicmp(flag.c_str(), L"console", wcslen(L"console")) == 0) DEBUG_FLAGS_VAR |= ASPNETCORE_DEBUG_FLAG_CONSOLE;
+            if (_wcsnicmp(flag.c_str(), L"file", wcslen(L"file")) == 0) DEBUG_FLAGS_VAR |= ASPNETCORE_DEBUG_FLAG_FILE;
         }
 
         // If file or console is enabled but level is not set, enable all levels
@@ -195,10 +198,10 @@ DebugInitialize(HMODULE hModule)
         // ignore
     }
 
-    /*if (IsDebuggerPresent())
+    if (IsDebuggerPresent())
     {
         DEBUG_FLAGS_VAR |= DEBUG_FLAGS_INFO;
-    }*/
+    }
 
     PrintDebugHeader();
 }
@@ -231,7 +234,7 @@ DebugInitializeFromConfig(IHttpServer& pHttpServer, IHttpApplication& pHttpAppli
     }
 
     std::filesystem::path filePath = std::filesystem::path(debugFile.QueryStr());
-    if (!filePath.string().empty() && filePath.is_relative())
+    if (!filePath.empty() && filePath.is_relative())
     {
         filePath = std::filesystem::path(pHttpApplication.GetApplicationPhysicalPath()) / filePath;
     }
@@ -250,7 +253,7 @@ DebugInitializeFromConfig(IHttpServer& pHttpServer, IHttpApplication& pHttpAppli
 VOID
 DebugStop()
 {
-    if (IsEnabled(ASPNETCORE_DEBUG_FLAG_FILE))
+    if (g_logFile != INVALID_HANDLE_VALUE)
     {
         CloseHandle(g_logFile);
     }
