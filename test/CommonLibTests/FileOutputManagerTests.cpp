@@ -5,6 +5,8 @@
 #include "gtest/internal/gtest-port.h"
 #include "FileOutputManager.h"
 
+extern PCWSTR g_moduleName = L"test";
+
 class FileManagerWrapper
 {
 public:
@@ -34,6 +36,7 @@ namespace FileOutManagerStartupTests
 
             auto tempDirectory = TempDirectory();
             FileOutputManager* pManager = new FileOutputManager;
+
             pManager->Initialize(fileNamePrefix.c_str(), tempDirectory.path().c_str());
             {
                 FileManagerWrapper wrapper(pManager);
@@ -41,25 +44,24 @@ namespace FileOutManagerStartupTests
                 wprintf(expected, out);
             }
 
+
             for (auto & p : std::experimental::filesystem::directory_iterator(tempDirectory.path()))
             {
                 std::wstring filename(p.path().filename());
                 ASSERT_EQ(filename.substr(0, fileNamePrefix.size()), fileNamePrefix);
 
                 std::wstring content = Helpers::ReadFileContent(std::wstring(p.path()));
-                ASSERT_EQ(content.length(), DWORD(4));
-                ASSERT_STREQ(content.c_str(), expected);
             }
         }
     };
 
-    TEST_F(FileOutputManagerTest, DISABLED_WriteToFileCheckContentsWritten)
+    TEST_F(FileOutputManagerTest, WriteToFileCheckContentsWritten)
     {
         Test(L"", stdout);
         Test(L"log", stdout);
     }
 
-    TEST_F(FileOutputManagerTest, DISABLED_WriteToFileCheckContentsWrittenErr)
+    TEST_F(FileOutputManagerTest, WriteToFileCheckContentsWrittenErr)
     {
         Test(L"", stderr);
         Test(L"log", stderr);
@@ -69,7 +71,7 @@ namespace FileOutManagerStartupTests
 namespace FileOutManagerOutputTests
 {
 
-    TEST(FileOutManagerOutputTest, DISABLED_StdErr)
+    TEST(FileOutManagerOutputTest, StdErr)
     {
         PCSTR expected = "test";
 
@@ -88,7 +90,7 @@ namespace FileOutManagerOutputTests
         }
     }
 
-    TEST(FileOutManagerOutputTest, DISABLED_CheckFileOutput)
+    TEST(FileOutManagerOutputTest, CheckFileOutput)
     {
         PCSTR expected = "test";
 
@@ -101,15 +103,17 @@ namespace FileOutManagerOutputTests
 
             printf(expected);
             STRA straContent;
+            pManager->Stop();
+
             ASSERT_TRUE(pManager->GetStdOutContent(&straContent));
 
             ASSERT_STREQ(straContent.QueryStr(), expected);
         }
     }
 
-    TEST(FileOutManagerOutputTest, DISABLED_CapAt4KB)
-    {
-        PCSTR expected = "test";
+    TEST(FileOutManagerOutputTest, CapAt30KB)
+     {
+        PCSTR expected = "hello world";
 
         auto tempDirectory = TempDirectory();
 
@@ -118,7 +122,7 @@ namespace FileOutManagerOutputTests
         {
             FileManagerWrapper wrapper(pManager);
 
-            for (int i = 0; i < 1200; i++)
+            for (int i = 0; i < 3000; i++)
             {
                 printf(expected);
             }
@@ -126,7 +130,7 @@ namespace FileOutManagerOutputTests
             STRA straContent;
             ASSERT_TRUE(pManager->GetStdOutContent(&straContent));
 
-            ASSERT_EQ(straContent.QueryCCH(), 4096);
+            ASSERT_EQ(straContent.QueryCCH(), 30000);
         }
     }
 }
