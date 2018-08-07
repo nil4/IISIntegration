@@ -273,8 +273,8 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting.IIS
 
             // Pass on the applicationhost.config to iis express. With this don't need to pass in the /path /port switches as they are in the applicationHost.config
             // We take a copy of the original specified applicationHost.Config to prevent modifying the one in the repo.
-            serverConfig = ModifyANCMPathInConfig(replaceFlag: "[ANCMPath]", dllName: "aspnetcore.dll", serverConfig);
-            serverConfig = ModifyANCMPathInConfig(replaceFlag: "[ANCMV2Path]", dllName: "aspnetcorev2.dll", serverConfig);
+            serverConfig = ModifyANCMPathInConfig(replaceFlag: "[ANCMPath]", AncmVersion.AspNetCoreModule, serverConfig);
+            serverConfig = ModifyANCMPathInConfig(replaceFlag: "[ANCMV2Path]", AncmVersion.AspNetCoreModuleV2, serverConfig);
 
             serverConfig = ReplacePlaceholder(serverConfig, "[PORT]", port.ToString(CultureInfo.InvariantCulture));
             serverConfig = ReplacePlaceholder(serverConfig, "[ApplicationPhysicalPath]", contentRoot);
@@ -320,11 +320,11 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting.IIS
             return content;
         }
 
-        private string ModifyANCMPathInConfig(string replaceFlag, string dllName, string serverConfig)
+        private string ModifyANCMPathInConfig(string replaceFlag, AncmVersion version, string serverConfig)
         {
             if (serverConfig.Contains(replaceFlag))
             {
-                var ancmFile = GetAncmLocation();
+                var ancmFile = GetAncmLocation(version);
 
                 Logger.LogDebug($"Writing '{replaceFlag}' '{ancmFile}' to config");
                 return serverConfig.Replace(replaceFlag, ancmFile);

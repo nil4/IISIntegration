@@ -69,9 +69,9 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting.IIS
             }
         }
 
-        protected string GetAncmLocation()
+        protected string GetAncmLocation(AncmVersion version)
         {
-            var ancmDllName = DeploymentParameters.AncmVersion == AncmVersion.AspNetCoreModuleV2 ? "aspnetcorev2.dll" : "aspnetcore.dll";
+            var ancmDllName = version == AncmVersion.AspNetCoreModuleV2 ? "aspnetcorev2.dll" : "aspnetcore.dll";
             var arch = DeploymentParameters.RuntimeArchitecture == RuntimeArchitecture.x64 ? $@"x64\{ancmDllName}" : $@"x86\{ancmDllName}";
             var ancmFile = Path.Combine(AppContext.BaseDirectory, arch);
             if (!File.Exists(Environment.ExpandEnvironmentVariables(ancmFile)))

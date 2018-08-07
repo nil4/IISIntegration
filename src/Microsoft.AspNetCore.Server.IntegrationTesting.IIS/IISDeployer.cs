@@ -6,8 +6,6 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
-using System.Security.AccessControl;
-using System.Security.Principal;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Xml.Linq;
@@ -31,6 +29,7 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting.IIS
         private CancellationTokenSource _hostShutdownToken = new CancellationTokenSource();
 
         private string _configPath;
+        private string _debugLogFile;
 
         public Process HostProcess { get; set; }
 
@@ -50,7 +49,7 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting.IIS
 
             TriggerHostShutdown(_hostShutdownToken);
 
-            GetLogsFromFile("debugLogs.txt");
+            GetLogsFromFile();
 
             CleanPublishedOutput();
             InvokeUserApplicationCleanup();
@@ -76,8 +75,9 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting.IIS
                 if (!IISDeploymentParameters.HandlerSettings.ContainsKey("debugLevel") &&
                     !IISDeploymentParameters.HandlerSettings.ContainsKey("debugFile"))
                 {
+                    _debugLogFile = Path.GetTempFileName();
                     IISDeploymentParameters.HandlerSettings["debugLevel"] = "4";
-                    IISDeploymentParameters.HandlerSettings["debugFile"] = "debugLogs.txt";
+                    IISDeploymentParameters.HandlerSettings["debugFile"] = _debugLogFile;
                 }
 
                 if (DeploymentParameters.ApplicationType == ApplicationType.Portable)
@@ -115,23 +115,23 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting.IIS
             }
         }
 
-        private void GetLogsFromFile(string file)
+        private void GetLogsFromFile()
         {
             var arr = new string[0];
 
-            RetryHelper.RetryOperation(() => arr = File.ReadAllLines(Path.Combine(DeploymentParameters.PublishedApplicationRootPath, file)),
-                            (ex) => Logger.LogWarning("Could not read log file"),
+            RetryHelper.RetryOperation(() => arr = File.ReadAllLines(Path.Combine(DeploymentParameters.PublishedApplicationRootPath, _debugLogFile)),
+                            (ex) => Logger.LogWarning(ex, "Could not read log file"),
                             5,
                             200);
-
-            if (arr.Length == 0)
-            {
-                Logger.LogWarning($"{file} is empty.");
-            }
 
             foreach (var line in arr)
             {
                 Logger.LogInformation(line);
+            }
+
+            if (File.Exists(_debugLogFile))
+            {
+                File.Delete(_debugLogFile);
             }
         }
 
@@ -270,9 +270,6 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting.IIS
 
             config.Save(appHostConfigPath);
 
-            var oFileSecurity = new FileSecurity(appHostConfigPath, AccessControlSections.Access);
-            oFileSecurity.AddAccessRule(new FileSystemAccessRule("Everyone", FileSystemRights.FullControl, AccessControlType.Allow));
-
             using (var serverManager = new ServerManager())
             {
                 var redirectionConfiguration = serverManager.GetRedirectionConfiguration();
@@ -320,7 +317,7 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting.IIS
                 .RequiredElement("system.webServer")
                 .RequiredElement("globalModules")
                 .AddOrUpdate("add", "name", ancmVersion)
-                .SetAttributeValue("image", GetAncmLocation());
+                .SetAttributeValue("image", GetAncmLocation(DeploymentParameters.AncmVersion));
 
             config
                 .RequiredElement("system.webServer")

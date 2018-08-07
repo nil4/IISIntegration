@@ -78,7 +78,7 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting.IIS
 
                 foreach (var envVar in WebConfigBasedEnvironmentVariables)
                 {
-                    environmentVariables.AddOrUpdate("handlerSetting", "name", envVar.Key)
+                    environmentVariables.AddOrUpdate("environmentVariable", "name", envVar.Key)
                         .SetAttributeValue("value", envVar.Value);
                 }
             };
