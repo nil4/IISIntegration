@@ -299,7 +299,10 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting.IIS
                 serverConfig = ReplacePlaceholder(serverConfig, "[HostingModel]", DeploymentParameters.HostingModel.ToString());
                 serverConfig = ReplacePlaceholder(serverConfig, "[AspNetCoreModule]", DeploymentParameters.AncmVersion.ToString());
             }
-            serverConfig = RunServerConfigActions(serverConfig, contentRoot);
+
+            var config = XDocument.Parse(serverConfig);
+            RunServerConfigActions(config.Root, contentRoot);
+            serverConfig = config.ToString();
 
             DeploymentParameters.ServerConfigLocation = Path.GetTempFileName();
             Logger.LogDebug("Saving Config to {configPath}", DeploymentParameters.ServerConfigLocation);
@@ -319,19 +322,9 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting.IIS
 
         private string ModifyANCMPathInConfig(string replaceFlag, string dllName, string serverConfig)
         {
-            var dllRoot = AppContext.BaseDirectory;
             if (serverConfig.Contains(replaceFlag))
             {
-                var arch = DeploymentParameters.RuntimeArchitecture == RuntimeArchitecture.x64 ? $@"x64\{dllName}" : $@"x86\{dllName}";
-                var ancmFile = Path.Combine(dllRoot, arch);
-                if (!File.Exists(Environment.ExpandEnvironmentVariables(ancmFile)))
-                {
-                    ancmFile = Path.Combine(dllRoot, dllName);
-                    if (!File.Exists(Environment.ExpandEnvironmentVariables(ancmFile)))
-                    {
-                        throw new FileNotFoundException("AspNetCoreModule could not be found.", ancmFile);
-                    }
-                }
+                var ancmFile = GetAncmLocation();
 
                 Logger.LogDebug($"Writing '{replaceFlag}' '{ancmFile}' to config");
                 return serverConfig.Replace(replaceFlag, ancmFile);
