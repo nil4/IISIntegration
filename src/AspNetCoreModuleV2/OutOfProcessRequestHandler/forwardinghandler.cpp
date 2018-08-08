@@ -776,6 +776,9 @@ HRESULT
 FORWARDING_HANDLER::GetHeaders(
     _In_ const PROTOCOL_CONFIG *    pProtocol,
     _In_    BOOL                    fForwardWindowsAuthToken,
+    _In_    BOOL                    fForwardUserName,
+    _In_    BOOL                    fForwardUserDomain,
+    _In_    PCSTR                   pszForwardUserNameHeader,
     _In_    SERVER_PROCESS*         pServerProcess,
     _Out_   PCWSTR *                ppszHeaders,
     _Inout_ DWORD *                 pcchHeaders
@@ -888,6 +891,37 @@ FORWARDING_HANDLER::GetHeaders(
             {
                 return hr;
             }
+        }
+    }
+
+    if (fForwardUserName)
+    {
+        strTemp.Reset();
+        if (FAILED_LOG(hr = strTemp.AppendW(m_pW3Context->GetUser()->GetRemoteUserName())))
+        {
+            return hr;
+        }
+
+        PCSTR pszHeaderValue = strTemp.QueryStr();
+        DWORD cchHeaderLen = strTemp.QueryCCH();
+
+        if (!fForwardUserDomain && !strTemp.IsEmpty())
+        {
+            int idx = strTemp.IndexOf('\\');
+            if (idx > 0)
+            {
+                pszHeaderValue += idx + 1;
+                cchHeaderLen -= idx + 1;
+            }
+        }
+
+        hr = m_pW3Context->GetRequest()->SetHeader(pszForwardUserNameHeader,
+            pszHeaderValue,
+            (USHORT)cchHeaderLen,
+            TRUE);
+        if (FAILED_LOG(hr))
+        {
+            return hr;
         }
     }
 
@@ -1164,6 +1198,9 @@ FORWARDING_HANDLER::CreateWinHttpRequest(
 
     hr = GetHeaders(pProtocol,
                     m_pApplication->QueryConfig()->QueryForwardWindowsAuthToken(),
+                    m_pApplication->QueryConfig()->QueryForwardUserName(),
+                    m_pApplication->QueryConfig()->QueryForwardUserDomain(),
+                    m_pApplication->QueryConfig()->QueryForwardUserNameHeader()->QueryStr(),
                     pServerProcess,
                    &m_pszHeaders,
                    &m_cchHeaders);

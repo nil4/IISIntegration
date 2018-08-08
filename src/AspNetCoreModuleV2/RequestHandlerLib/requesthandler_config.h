@@ -24,6 +24,9 @@
 #define CS_ASPNETCORE_ENVIRONMENT_VARIABLE_VALUE         L"value"
 #define CS_ASPNETCORE_PROCESSES_PER_APPLICATION          L"processesPerApplication"
 #define CS_ASPNETCORE_FORWARD_WINDOWS_AUTH_TOKEN         L"forwardWindowsAuthToken"
+#define CS_ASPNETCORE_FORWARD_USER_NAME                  L"forwardUserName"
+#define CS_ASPNETCORE_FORWARD_USER_DOMAIN                L"forwardUserDomain"
+#define CS_ASPNETCORE_FORWARD_USER_NAME_HEADER           L"forwardUserNameHeader"
 #define CS_ASPNETCORE_DISABLE_START_UP_ERROR_PAGE        L"disableStartUpErrorPage"
 #define CS_ASPNETCORE_RECYCLE_ON_FILE_CHANGE             L"recycleOnFileChange"
 #define CS_ASPNETCORE_RECYCLE_ON_FILE_CHANGE_FILE        L"file"
@@ -175,6 +178,24 @@ public:
     }
 
     BOOL
+    QueryForwardUserName()
+    {
+        return m_fForwardUserName;
+    }
+
+    BOOL
+    QueryForwardUserDomain()
+    {
+        return m_fForwardUserDomain;
+    }
+
+    STRA*
+    QueryForwardUserNameHeader()
+    {
+        return &m_straForwardUserNameHeader;
+    }
+
+    BOOL
     QueryWindowsAuthEnabled()
     {
         return m_fWindowsAuthEnabled;
@@ -243,6 +264,9 @@ protected:
     STRU                   m_struConfigPath;
     BOOL                   m_fStdoutLogEnabled;
     BOOL                   m_fForwardWindowsAuthToken;
+    BOOL                   m_fForwardUserName;
+    BOOL                   m_fForwardUserDomain;
+    STRA                   m_straForwardUserNameHeader;
     BOOL                   m_fDisableStartUpErrorPage;
     BOOL                   m_fWindowsAuthEnabled;
     BOOL                   m_fBasicAuthEnabled;

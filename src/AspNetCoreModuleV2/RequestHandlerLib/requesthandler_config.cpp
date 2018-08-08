@@ -88,7 +88,7 @@ REQUESTHANDLER_CONFIG::Populate(
     IHttpApplication   *pHttpApplication
 )
 {
-    STACK_STRU(strHostingModel, 300);
+    STACK_STRU(strTemp, 300);
     HRESULT                         hr = S_OK;
     STRU                            strEnvName;
     STRU                            strEnvValue;
@@ -262,7 +262,7 @@ REQUESTHANDLER_CONFIG::Populate(
 
     hr = GetElementStringProperty(pAspNetCoreElement,
         CS_ASPNETCORE_HOSTING_MODEL,
-        &strHostingModel);
+        &strTemp);
     if (FAILED(hr))
     {
         // Swallow this error for backward compatability
@@ -270,11 +270,11 @@ REQUESTHANDLER_CONFIG::Populate(
         hr = S_OK;
     }
 
-    if (strHostingModel.IsEmpty() || strHostingModel.Equals(L"outofprocess", TRUE))
+    if (strTemp.IsEmpty() || strTemp.Equals(L"outofprocess", TRUE))
     {
         m_hostingModel = HOSTING_OUT_PROCESS;
     }
-    else if (strHostingModel.Equals(L"inprocess", TRUE))
+    else if (strTemp.Equals(L"inprocess", TRUE))
     {
         m_hostingModel = HOSTING_IN_PROCESS;
     }
@@ -343,6 +343,35 @@ REQUESTHANDLER_CONFIG::Populate(
     hr = GetElementBoolProperty(pAspNetCoreElement,
         CS_ASPNETCORE_FORWARD_WINDOWS_AUTH_TOKEN,
         &m_fForwardWindowsAuthToken);
+    if (FAILED(hr))
+    {
+        goto Finished;
+    }
+
+    hr = GetElementBoolProperty(pAspNetCoreElement,
+        CS_ASPNETCORE_FORWARD_USER_NAME,
+        &m_fForwardUserName);
+    if (FAILED(hr))
+    {
+        goto Finished;
+    }
+
+    hr = GetElementBoolProperty(pAspNetCoreElement,
+        CS_ASPNETCORE_FORWARD_USER_DOMAIN,
+        &m_fForwardUserDomain);
+    if (FAILED(hr))
+    {
+        goto Finished;
+    }
+
+    hr = GetElementStringProperty(pAspNetCoreElement,
+        CS_ASPNETCORE_FORWARD_USER_NAME_HEADER,
+        &strTemp);
+    if (FAILED(hr))
+    {
+        goto Finished;
+    }
+    hr = m_straForwardUserNameHeader.CopyWTruncate(strTemp.QueryStr());
     if (FAILED(hr))
     {
         goto Finished;

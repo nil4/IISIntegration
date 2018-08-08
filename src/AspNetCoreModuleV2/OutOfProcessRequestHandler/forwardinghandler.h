@@ -161,6 +161,9 @@ private:
     GetHeaders(
         _In_ const PROTOCOL_CONFIG *    pProtocol,
         _In_    BOOL                    fForwardWindowsAuthToken,
+        _In_    BOOL                    fForwardUserName,
+        _In_    BOOL                    fForwardUserDomain,
+        _In_    PCSTR                   pszForwardUserNameHeader,
         _In_    SERVER_PROCESS*         pServerProcess,
         _Out_   PCWSTR *                ppszHeaders,
         _Inout_ DWORD *                 pcchHeaders
