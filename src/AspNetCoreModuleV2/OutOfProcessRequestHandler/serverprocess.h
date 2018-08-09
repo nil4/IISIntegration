@@ -39,7 +39,8 @@ public:
         _In_ STRU                 *pstruStdoutLogFile,
         _In_ STRU                 *pszAppPhysicalPath,
         _In_ STRU                 *pszAppPath,
-        _In_ STRU                 *pszAppVirtualPath
+        _In_ STRU                 *pszAppVirtualPath,
+        _In_ BOOL                  fProcessIdCheckDisabled
         );
 
     HRESULT
@@ -241,6 +242,7 @@ private:
     BOOL                    m_fBasicAuthEnabled;
     BOOL                    m_fAnonymousAuthEnabled;
     BOOL                    m_fDebuggerAttached;
+    BOOL                    m_fProcessIdCheckDisabled;
 
     STTIMER                 m_Timer;
     SOCKET                  m_socket;

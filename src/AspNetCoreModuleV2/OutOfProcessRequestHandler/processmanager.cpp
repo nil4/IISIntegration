@@ -162,7 +162,8 @@ PROCESS_MANAGER::GetProcess(
                     pConfig->QueryStdoutLogFile(),
                     pConfig->QueryApplicationPhysicalPath(),   // physical path
                     pConfig->QueryApplicationPath(),           // app path
-                    pConfig->QueryApplicationVirtualPath()     // App relative virtual path
+                    pConfig->QueryApplicationVirtualPath(),    // App relative virtual path
+                    pConfig->QueryDisableProcessIdCheck()
             ));
             RETURN_IF_FAILED(pSelectedServerProcess->StartProcess());
         }

@@ -30,7 +30,8 @@ SERVER_PROCESS::Initialize(
     STRU                  *pstruStdoutLogFile,
     STRU                  *pszAppPhysicalPath,
     STRU                  *pszAppPath,
-    STRU                  *pszAppVirtualPath
+    STRU                  *pszAppVirtualPath,
+    BOOL                  fProcessIdCheckDisabled
 )
 {
     HRESULT hr = S_OK;
@@ -45,6 +46,7 @@ SERVER_PROCESS::Initialize(
     m_fAnonymousAuthEnabled = fAnonymousAuthEnabled;
     m_pProcessManager->ReferenceProcessManager();
     m_fDebuggerAttached = FALSE;
+    m_fProcessIdCheckDisabled = fProcessIdCheckDisabled;
 
     if (FAILED_LOG(hr = m_ProcessPath.Copy(*pszProcessExePath)) ||
         FAILED_LOG(hr = m_struLogFile.Copy(*pstruStdoutLogFile))||
@@ -632,20 +634,33 @@ SERVER_PROCESS::PostStartCheck(
 
         if(!fProcessMatch)
         {
-            //
-            // process that we created is not listening
-            // on the port we specified.
-            //
-            fReady = FALSE;
-            hr = HRESULT_FROM_WIN32(ERROR_CREATE_FAILED);
-            strEventMsg.SafeSnwprintf(
-                ASPNETCORE_EVENT_PROCESS_START_WRONGPORT_ERROR_MSG,
-                m_struAppFullPath.QueryStr(),
-                m_struPhysicalPath.QueryStr(),
-                m_struCommandLine.QueryStr(),
-                m_dwPort,
-                hr);
-            goto Finished;
+            if (m_fProcessIdCheckDisabled)
+            {
+                //
+                // allow the created process to not be listening on the
+                // specified port itself, for cases like docker.exe
+                // that spawns a container, but com.docker.service (a
+                // windows service) actually owns the listening port
+                //
+                fProcessMatch = TRUE;
+            }
+            else
+            {
+                //
+                // process that we created is not listening
+                // on the port we specified.
+                //
+                fReady = FALSE;
+                hr = HRESULT_FROM_WIN32(ERROR_CREATE_FAILED);
+                strEventMsg.SafeSnwprintf(
+                    ASPNETCORE_EVENT_PROCESS_START_WRONGPORT_ERROR_MSG,
+                    m_struAppFullPath.QueryStr(),
+                    m_struPhysicalPath.QueryStr(),
+                    m_struCommandLine.QueryStr(),
+                    m_dwPort,
+                    hr);
+                goto Finished;
+            }
         }
     }
 

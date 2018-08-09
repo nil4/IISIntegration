@@ -378,6 +378,14 @@ REQUESTHANDLER_CONFIG::Populate(
     }
 
     hr = GetElementBoolProperty(pAspNetCoreElement,
+        CS_ASPNETCORE_DISABLE_PROCESS_ID_CHECK,
+        &m_fDisableProcessIdCheck);
+    if (FAILED(hr))
+    {
+        goto Finished;
+    }
+
+    hr = GetElementBoolProperty(pAspNetCoreElement,
         CS_ASPNETCORE_DISABLE_START_UP_ERROR_PAGE,
         &m_fDisableStartUpErrorPage);
     if (FAILED(hr))

@@ -25,6 +25,7 @@
 #define CS_ASPNETCORE_PROCESSES_PER_APPLICATION          L"processesPerApplication"
 #define CS_ASPNETCORE_FORWARD_WINDOWS_AUTH_TOKEN         L"forwardWindowsAuthToken"
 #define CS_ASPNETCORE_FORWARD_USER_NAME                  L"forwardUserName"
+#define CS_ASPNETCORE_DISABLE_PROCESS_ID_CHECK           L"disableProcessIdCheck"
 #define CS_ASPNETCORE_FORWARD_USER_DOMAIN                L"forwardUserDomain"
 #define CS_ASPNETCORE_FORWARD_USER_NAME_HEADER           L"forwardUserNameHeader"
 #define CS_ASPNETCORE_DISABLE_START_UP_ERROR_PAGE        L"disableStartUpErrorPage"
@@ -196,6 +197,12 @@ public:
     }
 
     BOOL
+    QueryDisableProcessIdCheck()
+    {
+        return m_fDisableProcessIdCheck;
+    }
+
+    BOOL
     QueryWindowsAuthEnabled()
     {
         return m_fWindowsAuthEnabled;
@@ -267,6 +274,7 @@ protected:
     BOOL                   m_fForwardUserName;
     BOOL                   m_fForwardUserDomain;
     STRA                   m_straForwardUserNameHeader;
+    BOOL                   m_fDisableProcessIdCheck;
     BOOL                   m_fDisableStartUpErrorPage;
     BOOL                   m_fWindowsAuthEnabled;
     BOOL                   m_fBasicAuthEnabled;

@@ -27,6 +27,7 @@
         <attribute name="forwardUserName" type="bool" defaultValue="false" />
         <attribute name="forwardUserDomain" type="bool" defaultValue="true" />
         <attribute name="forwardUserNameHeader" type="string" defaultValue="MS-ASPNETCORE-USER" />
+        <attribute name="disableProcessIdCheck" type="bool" defaultValue="false" />
         <attribute name="disableStartUpErrorPage" type="bool" defaultValue="false" />
         <attribute name="hostingModel" type="string" />
         <element name="recycleOnFileChange">
