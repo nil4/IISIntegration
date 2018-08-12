@@ -440,16 +440,10 @@ SERVER_PROCESS::SetupCommandLine(
     LPWSTR     pszFullPath = NULL;
     STRU       strRelativePath;
     DWORD      dwBufferSize = 0;
+    DWORD      dwStartPos = 0;
     FILE       *file = NULL;
 
     DBG_ASSERT(pstrCommandLine);
-
-    if (!m_struCommandLine.IsEmpty() &&
-        pstrCommandLine == (&m_struCommandLine))
-    {
-        // already set up the commandline string, skip
-        goto Finished;
-    }
 
     pszPath = m_ProcessPath.QueryStr();
 
@@ -486,11 +480,41 @@ SERVER_PROCESS::SetupCommandLine(
         }
     }
     if (FAILED_LOG(hr = pstrCommandLine->Copy(pszPath)) ||
-        FAILED_LOG(hr = pstrCommandLine->Append(L" ")) ||
-        FAILED_LOG(hr = pstrCommandLine->Append(m_Arguments.QueryStr())))
+        FAILED_LOG(hr = pstrCommandLine->Append(L" ")))
     {
         goto Finished;
     }
+
+    // replace %ASPNETCORE_PORT% placeholder in the process arguments
+
+    DBG_ASSERT(MIN_PORT <= m_dwPort && m_dwPort <= MAX_PORT);
+    DBG_ASSERT(!m_struPort.IsEmpty());
+
+    do
+    {
+        INT iPos = m_Arguments.IndexOf(L"%ASPNETCORE_PORT%", dwStartPos);
+        if (iPos < 0)
+        {
+            // append the remaining arguments and exit loop
+            if (FAILED_LOG(hr = pstrCommandLine->Append(m_Arguments.QueryStr() + dwStartPos)))
+            {
+                goto Finished;
+            }
+
+            break;
+        }
+        else {
+            // append the part before %ASPNETCORE_PORT%, then the listening port number
+            if (FAILED_LOG(hr = pstrCommandLine->Append(m_Arguments.QueryStr() + dwStartPos, iPos - dwStartPos))
+                || FAILED_LOG(hr = pstrCommandLine->Append(m_struPort)))
+            {
+                goto Finished;
+            }
+
+            dwStartPos = iPos + 17 /* wcslen(L"%ASPNETCORE_PORT%") */;
+        }
+    }
+    while (TRUE);
 
 Finished:
     if (pszFullPath != NULL)
@@ -786,14 +810,6 @@ SERVER_PROCESS::StartProcess(
     {
         m_dwPort = 0;
         dwRetryCount--;
-        //
-        // generate process command line.
-        //
-        if (FAILED_LOG(hr = SetupCommandLine(&m_struCommandLine)))
-        {
-            pStrStage = L"SetupCommandLine";
-            goto Failure;
-        }
 
         if (FAILED_LOG(hr = ENVIRONMENT_VAR_HELPERS::InitEnvironmentVariablesTable(
             m_pEnvironmentVarTable,
@@ -822,6 +838,16 @@ SERVER_PROCESS::StartProcess(
         if (FAILED_LOG(hr = SetupListenPort(pHashTable, &fCriticalError)))
         {
             pStrStage = L"SetupListenPort";
+            goto Failure;
+        }
+
+        //
+        // generate process command line, replacing %ASPNETCORE_PORT%
+        // placeholders in the arguments with the listening port
+        //
+        if (FAILED_LOG(hr = SetupCommandLine(&m_struCommandLine)))
+        {
+            pStrStage = L"SetupCommandLine";
             goto Failure;
         }
 
